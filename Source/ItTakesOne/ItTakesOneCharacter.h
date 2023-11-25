@@ -40,15 +40,12 @@ class AItTakesOneCharacter : public ACharacter
 public:
 	AItTakesOneCharacter();
 
-
 protected:
-
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-
 
 protected:
 	// APawn interface
@@ -62,5 +59,6 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-};
 
+	virtual void Destroyed() override;
+};
