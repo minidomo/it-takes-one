@@ -53,20 +53,6 @@ AItTakesOneCharacter::AItTakesOneCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
-void AItTakesOneCharacter::BeginPlay()
-{
-	// Call the base class
-	Super::BeginPlay();
-
-	//Add Input Mapping Context
-	// if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	// {
-	// 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-	// 	{
-	// 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
-	// 	}
-	// }
-}
 
 void AItTakesOneCharacter::Destroyed()
 {
@@ -78,28 +64,6 @@ void AItTakesOneCharacter::Destroyed()
 	{
 		GameMode->OnPlayerDiedDelegate.Broadcast(this, ControllerCopy);
 	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void AItTakesOneCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
-	// Set up action bindings
-	// if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
-
-		// //Jumping
-		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		// //Moving
-		// EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AItTakesOneCharacter::Move);
-
-		//Looking
-		// EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AItTakesOneCharacter::Look);
-
-	// }
-
 }
 
 void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
