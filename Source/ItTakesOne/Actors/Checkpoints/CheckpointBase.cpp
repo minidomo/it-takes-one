@@ -22,6 +22,7 @@ void ACheckpointBase::Activate()
 	if (const auto GameState = GetWorld()->GetGameState<APlayableGameStateBase>())
 	{
 		GameState->UpdateActiveSpawnPoint(SpawnPoint);
+		Destroy();
 	}
 }
 
