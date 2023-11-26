@@ -42,7 +42,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void GliderEvent();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	//UFUNCTION(BlueprintImplementableEvent)
 	void HammerEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)

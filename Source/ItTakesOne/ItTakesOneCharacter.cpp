@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ItTakesOneCharacter.h"
+#include "Actors/BreakableActor.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -8,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Engine/GameEngine.h"
 #include "Actors/GameModes/PlayableGameModeBase.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,5 +99,35 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void AItTakesOneCharacter::HammerEvent()
+{
+	if (Controller != nullptr)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Hammer"));
+		}
+
+		// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
+		 // Array to hold all overlapping actors
+		TArray<AActor*> OverlappingActors;
+
+		// Get all actors that the character is currently overlapping
+		GetOverlappingActors(OverlappingActors);
+
+		// Loop through each actor
+		for (AActor* Actor : OverlappingActors)
+		{
+			// Check if the actor is of the BreakableActor class
+			ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
+			if (BreakableActor != nullptr)
+			{
+				// Destroy the BreakableActor
+				BreakableActor->Destroy();
+			}
+		}
 	}
 }
