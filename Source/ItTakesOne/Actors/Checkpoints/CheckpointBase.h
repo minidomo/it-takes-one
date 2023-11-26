@@ -27,7 +27,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	template <class T = UShapeComponent>
+	FORCEINLINE UShapeComponent* GetTriggerArea() const { return TriggerArea; }
+
+	template <class T>
 	FORCEINLINE T* GetTriggerArea() const { return Cast<T>(TriggerArea); }
 
 	FORCEINLINE APlayerStart* GetSpawnPoint() const { return SpawnPoint; }

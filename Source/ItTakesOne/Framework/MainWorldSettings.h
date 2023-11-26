@@ -17,12 +17,18 @@ public:
 	AMainWorldSettings();
 
 protected:
-	UPROPERTY(EditInstanceOnly)
+	UPROPERTY(EditInstanceOnly, Category = Variables)
 	APlayerStart* DefaultSpawnPoint;
 
-protected:
-	virtual void BeginPlay() override;
+	UPROPERTY(EditInstanceOnly, Category = "Variables|Warnings")
+	bool bDisableDefaultSpawnPointWarning;
+
+	UPROPERTY(EditInstanceOnly, Category = "Variables|Debug")
+	bool bShowCheckpointAreas;
 
 public:
+	virtual void PreInitializeComponents() override;
+	virtual void PostInitializeComponents() override;
+	
 	FORCEINLINE APlayerStart* GetDefaultSpawnPoint() const { return DefaultSpawnPoint; }
 };

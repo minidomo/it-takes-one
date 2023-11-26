@@ -3,8 +3,8 @@
 #include "MainMenuGameMode.h"
 
 #include "Blueprint/UserWidget.h"
-#include "ItTakesOne/MainMenuPlayerController.h"
-#include "ItTakesOne/MainMenuUI.h"
+#include "ItTakesOne/Controllers/MainMenuPlayerController.h"
+#include "ItTakesOne/UI/MainMenuUI.h"
 
 AMainMenuGameMode::AMainMenuGameMode()
 {
