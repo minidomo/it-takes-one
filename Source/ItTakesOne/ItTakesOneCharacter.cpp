@@ -7,10 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "_Temp/TestGameMode.h"
-
+#include "Actors/GameModes/PlayableGameModeBase.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AItTakesOneCharacter
@@ -60,7 +58,7 @@ void AItTakesOneCharacter::Destroyed()
 	AController* ControllerCopy = GetController();
 	Super::Destroyed();
 
-	if (const auto GameMode = GetWorld()->GetAuthGameMode<ATestGameMode>())
+	if (const auto GameMode = GetWorld()->GetAuthGameMode<APlayableGameModeBase>())
 	{
 		GameMode->OnPlayerDiedDelegate.Broadcast(this, ControllerCopy);
 	}
