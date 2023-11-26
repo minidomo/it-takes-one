@@ -52,8 +52,11 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 	if (const auto CurGameState = GetGameState<APlayableGameStateBase>())
 	{
 		PlayerStart = CurGameState->GetActiveSpawnPoint();
-		UE_LOG(LogTemp, Display, TEXT("%s: use game state active spawn point: %d"), *GetActorNameOrLabel(),
-		       !!PlayerStart);
+
+		if (PlayerStart)
+		{
+			UE_LOG(LogTemp, Display, TEXT("%s: use game state active spawn point"), *GetActorNameOrLabel());
+		}
 	}
 
 	if (!PlayerStart)
@@ -61,18 +64,22 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 		if (const auto WorldSettings = Cast<AMainWorldSettings>(GetWorldSettings()))
 		{
 			PlayerStart = WorldSettings->GetDefaultSpawnPoint();
-			UE_LOG(LogTemp, Warning, TEXT("%s: use world settings default spawn point: %d"), *GetActorNameOrLabel(),
-			       !!PlayerStart);
+
+			if (PlayerStart)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s: use world settings default spawn point"), *GetActorNameOrLabel());
+			}
 		}
 	}
 
 	if (!PlayerStart)
 	{
 		PlayerStart = Super::ChoosePlayerStart_Implementation(Player);
+
 		UE_LOG(LogTemp, Error,
 		       TEXT(
-			       "%s: could not find a spawn point in game state or world settings, use default player start implementation: %d"
-		       ), *GetActorNameOrLabel(), !!PlayerStart);
+			       "%s: could not find a spawn point in game state or world settings, using default player start implementation"
+		       ), *GetActorNameOrLabel());
 	}
 
 	return PlayerStart;

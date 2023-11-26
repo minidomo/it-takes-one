@@ -4,14 +4,18 @@
 
 AMainWorldSettings::AMainWorldSettings()
 {
+	bDisableDefaultSpawnPointWarning = false;
 }
 
-void AMainWorldSettings::BeginPlay()
+void AMainWorldSettings::PreInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PreInitializeComponents();
+
 	if (!DefaultSpawnPoint)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: default spawn point is not set, which may be important"),
-		       *GetActorNameOrLabel());
+		if (!bDisableDefaultSpawnPointWarning)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s: default spawn point is not set"), *GetActorNameOrLabel());
+		}
 	}
 }

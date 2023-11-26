@@ -20,9 +20,11 @@ protected:
 	UPROPERTY(EditInstanceOnly)
 	APlayerStart* DefaultSpawnPoint;
 
-protected:
-	virtual void BeginPlay() override;
+	UPROPERTY(EditInstanceOnly)
+	bool bDisableDefaultSpawnPointWarning;
 
 public:
+	virtual void PreInitializeComponents() override;
+	
 	FORCEINLINE APlayerStart* GetDefaultSpawnPoint() const { return DefaultSpawnPoint; }
 };
