@@ -24,10 +24,7 @@ class AItTakesOneCharacter : public ACharacter
 public:
 	AItTakesOneCharacter();
 
-	/** Called for movement input */
 	void MoveEvent(const FInputActionValue& Value);
-
-	/** Called for looking input */
 	void LookEvent(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -38,6 +35,18 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void PauseEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void JetEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void GliderEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HammerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ClockEvent();
 
 public:
 	/** Returns CameraBoom subobject **/
