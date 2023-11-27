@@ -42,11 +42,17 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void GliderEvent();
 
+	UFUNCTION(BlueprintCallable)
+		void StartPositionRecording();
+
 	//UFUNCTION(BlueprintImplementableEvent)
 	void HammerEvent();
 
-	UFUNCTION(BlueprintImplementableEvent)
+	//UFUNCTION(BlueprintImplementableEvent)
 	void ClockEvent();
+
+	//place the footstep for the clock
+	void PlaceFootstepDecals();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -55,4 +61,21 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	virtual void Destroyed() override;
+
+private: 
+	FTimerHandle PositionHistoryTimerHandle;
+	// Array to store positions
+	TArray<FVector> PositionHistory;
+	// Function to update position history
+	void UpdatePositionHistory();
+
+
+protected:
+	// Decal material for the footstep
+	UPROPERTY(EditAnywhere, Category = "Footsteps")
+		UMaterialInterface* FootstepDecalMaterial;
+
+	// Decal size
+	UPROPERTY(EditAnywhere, Category = "Footsteps")
+		FVector DecalSize;
 };
