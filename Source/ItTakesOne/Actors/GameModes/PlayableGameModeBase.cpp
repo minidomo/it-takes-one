@@ -92,13 +92,11 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 
 void APlayableGameModeBase::LoadSaveGame()
 {
+	auto WorldData = GetPlayableWorldSaveData();
+	if (!WorldData) { return; }
 	UE_LOG(LogTemp, Display, TEXT("%s: loading map data"), *GetActorNameOrLabel());
 
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	auto ContentData = GameInstance->GetContentData();
-	auto& WorldData = ContentData->TestWorld;
-
-	if (WorldData.bInitialized)
+	if (WorldData->bInitialized)
 	{
 		for (FActorIterator It(GetWorld()); It; ++It)
 		{
@@ -106,7 +104,7 @@ void APlayableGameModeBase::LoadSaveGame()
 			auto SavableActor = Cast<ISavableActorInterface>(Actor);
 			if (SavableActor)
 			{
-				for (auto& ActorData : WorldData.Actors)
+				for (auto& ActorData : WorldData->Actors)
 				{
 					if (ActorData.ActorName == Actor->GetFName())
 					{
@@ -124,9 +122,9 @@ void APlayableGameModeBase::LoadSaveGame()
 
 void APlayableGameModeBase::WriteSaveGame()
 {
-	UE_LOG(LogTemp, Display, TEXT("%s: saving map data"), *GetActorNameOrLabel());
 	auto WorldData = GetPlayableWorldSaveData();
 	if (!WorldData) { return; }
+	UE_LOG(LogTemp, Display, TEXT("%s: saving map data"), *GetActorNameOrLabel());
 
 	WorldData->Actors.Empty();
 
