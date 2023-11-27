@@ -10,6 +10,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Engine/GameEngine.h"
+#include "Components/DecalComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Actors/GameModes/PlayableGameModeBase.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,5 +131,59 @@ void AItTakesOneCharacter::HammerEvent()
 				BreakableActor->Destroy();
 			}
 		}
+	}
+}
+
+void AItTakesOneCharacter::StartPositionRecording() {
+
+	GetWorld()->GetTimerManager().SetTimer(PositionHistoryTimerHandle, this, &AItTakesOneCharacter::UpdatePositionHistory, 0.2f, true);
+	
+}
+
+void AItTakesOneCharacter::UpdatePositionHistory()
+{
+	// Add the current position to the history array
+	PositionHistory.Add(GetActorLocation());
+
+	// Optional: limit the size of the array to keep only the last 30 positions (3 seconds at 0.1 second intervals)
+	if (PositionHistory.Num() > 15)
+	{
+		PositionHistory.RemoveAt(0);
+	}
+	
+
+	PlaceFootstepDecals();
+}
+
+void AItTakesOneCharacter::PlaceFootstepDecals()
+{
+
+	for (FVector Position : PositionHistory)
+	{
+		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), FootstepDecalMaterial, DecalSize, Position, FRotator(0.f, 0.f, 0.f), 10.0f);
+		
+
+		if (Decal)
+		{
+			Decal->SetFadeScreenSize(0.0001f);
+		}
+	}
+}
+
+void AItTakesOneCharacter::ClockEvent()
+{
+	if (Controller != nullptr)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Clock!"));
+		}
+
+		if (PositionHistory.Num() >= 15)
+		{
+			// Move the character to the position from 3 seconds ago
+			SetActorLocation(PositionHistory[0]);
+		}
+		
 	}
 }
