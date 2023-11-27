@@ -12,6 +12,7 @@
 #include "Engine/GameEngine.h"
 #include "Components/DecalComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 #include "Actors/GameModes/PlayableGameModeBase.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -150,28 +151,26 @@ void AItTakesOneCharacter::UpdatePositionHistory()
 	{
 		PositionHistory.RemoveAt(0);
 	}
-	
 
 	PlaceFootstepDecals();
 }
 
 void AItTakesOneCharacter::PlaceFootstepDecals()
 {
-
-	for (FVector Position : PositionHistory)
-	{
-		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), FootstepDecalMaterial, DecalSize, Position, FRotator(0.f, 0.f, 0.f), 10.0f);
-		
+		float HalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		FVector FloorPosition = GetActorLocation() - FVector(0.0f, 0.0f, HalfHeight);
+		FVector DecalPosition = FloorPosition + FVector(0.0f, 0.0f, 0.0f);
+		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), FootstepDecalMaterial, DecalSize, DecalPosition, FRotator(0.f, 0.f, 0.f), 3.0f);
 
 		if (Decal)
 		{
 			Decal->SetFadeScreenSize(0.0001f);
 		}
-	}
 }
 
 void AItTakesOneCharacter::ClockEvent()
 {
+
 	if (Controller != nullptr)
 	{
 		if (GEngine)
