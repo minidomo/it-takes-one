@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "PlayableGameStateBase.generated.h"
 
 class APlayerStart;
@@ -12,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActiveSpawnPointUpdateDelegate, 
                                              APlayerStart*, NewSpawnPoint);
 
 UCLASS()
-class ITTAKESONE_API APlayableGameStateBase : public AGameStateBase
+class ITTAKESONE_API APlayableGameStateBase : public AGameStateBase, public ISavableActorInterface
 {
 	GENERATED_BODY()
 
@@ -23,12 +24,16 @@ protected:
 	UPROPERTY()
 	APlayerStart* ActiveSpawnPoint;
 
+	UPROPERTY(SaveGame)
+	FName ActiveSpawnPointName;
+
 public:
 	UPROPERTY()
 	FOnActiveSpawnPointUpdateDelegate OnActiveSpawnPointUpdateDelegate;
 
 public:
 	virtual void PreInitializeComponents() override;
+	virtual void OnActorLoaded() override;
 
 	bool UpdateActiveSpawnPoint(APlayerStart* NewActiveSpawnPoint);
 

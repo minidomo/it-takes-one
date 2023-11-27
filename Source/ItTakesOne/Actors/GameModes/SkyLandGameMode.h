@@ -13,4 +13,6 @@ class ITTAKESONE_API ASkyLandGameMode : public APlayableGameModeBase
 
 public:
 	ASkyLandGameMode();
+
+	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData() override;
 };

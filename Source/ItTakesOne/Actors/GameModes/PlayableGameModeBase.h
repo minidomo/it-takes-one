@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "ItTakesOne/Data/SaveGames/ContentSaveGame.h"
 #include "PlayableGameModeBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerDiedDelegate, ACharacter*, Character, AController*, Controller);
@@ -28,4 +29,10 @@ protected:
 
 public:
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+	virtual void PreInitializeComponents() override;
+
+	virtual void LoadSaveGame();
+	virtual void WriteSaveGame();
+
+	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData();
 };

@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "CheckpointBase.generated.h"
 
 class APlayerStart;
 
 UCLASS(Abstract)
-class ITTAKESONE_API ACheckpointBase : public AActor
+class ITTAKESONE_API ACheckpointBase : public AActor, public ISavableActorInterface
 {
 	GENERATED_BODY()
 
@@ -22,6 +23,9 @@ protected:
 
 	UPROPERTY(EditInstanceOnly, Category = Spawn)
 	APlayerStart* SpawnPoint;
+
+	UPROPERTY(SaveGame)
+	bool bWasActivated;
 
 protected:
 	virtual void BeginPlay() override;

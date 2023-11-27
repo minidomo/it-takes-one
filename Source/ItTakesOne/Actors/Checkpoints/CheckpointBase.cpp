@@ -2,6 +2,7 @@
 
 #include "CheckpointBase.h"
 
+#include "ItTakesOne/Actors/GameModes/PlayableGameModeBase.h"
 #include "ItTakesOne/Actors/GameStates/PlayableGameStateBase.h"
 
 ACheckpointBase::ACheckpointBase()
@@ -19,10 +20,18 @@ void ACheckpointBase::BeginPlay()
 
 void ACheckpointBase::Activate()
 {
+	if (bWasActivated) { return; }
+
 	if (const auto GameState = GetWorld()->GetGameState<APlayableGameStateBase>())
 	{
-		GameState->UpdateActiveSpawnPoint(SpawnPoint);
-		Destroy();
+		if (GameState->UpdateActiveSpawnPoint(SpawnPoint))
+		{
+			bWasActivated = true;
+			if (const auto GameMode = GetWorld()->GetAuthGameMode<APlayableGameModeBase>())
+			{
+				GameMode->WriteSaveGame();
+			}
+		}
 	}
 }
 

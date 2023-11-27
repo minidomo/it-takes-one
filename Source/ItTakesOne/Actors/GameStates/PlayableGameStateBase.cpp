@@ -2,9 +2,9 @@
 
 #include "PlayableGameStateBase.h"
 
+#include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
 #include "ItTakesOne/Framework/MainWorldSettings.h"
-#include "ItTakesOne/Libraries/DataLibrary.h"
 
 APlayableGameStateBase::APlayableGameStateBase()
 {
@@ -14,11 +14,33 @@ void APlayableGameStateBase::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 
-	if (const auto WorldSettings = Cast<AMainWorldSettings>(GetWorldSettings()))
+	if (!ActiveSpawnPoint)
 	{
-		ActiveSpawnPoint = WorldSettings->GetDefaultSpawnPoint();
-		UE_LOG(LogTemp, Display, TEXT("%s: set active spawn point to world settings default spawn point: %d"),
-		       *GetActorNameOrLabel(), !!ActiveSpawnPoint);
+		if (const auto WorldSettings = Cast<AMainWorldSettings>(GetWorldSettings()))
+		{
+			UpdateActiveSpawnPoint(WorldSettings->GetDefaultSpawnPoint());
+		}
+	}
+}
+
+void APlayableGameStateBase::OnActorLoaded()
+{
+	ISavableActorInterface::OnActorLoaded();
+
+	if (!ActiveSpawnPointName.IsNone())
+	{
+		if (!IsValid(ActiveSpawnPoint) || ActiveSpawnPointName != ActiveSpawnPoint->GetFName())
+		{
+			for (TActorIterator<APlayerStart> It(GetWorld(), APlayerStart::StaticClass()); It; ++It)
+			{
+				auto Actor = *It;
+				if (Actor->GetFName() == ActiveSpawnPointName)
+				{
+					UpdateActiveSpawnPoint(Actor);
+					break;
+				}
+			}
+		}
 	}
 }
 
@@ -31,10 +53,12 @@ bool APlayableGameStateBase::UpdateActiveSpawnPoint(APlayerStart* NewActiveSpawn
 
 	const auto OldSpawnPoint = ActiveSpawnPoint;
 	ActiveSpawnPoint = NewActiveSpawnPoint;
-	OnActiveSpawnPointUpdateDelegate.Broadcast(OldSpawnPoint, ActiveSpawnPoint);
-	UE_LOG(LogTemp, Display, TEXT("%s: updated spawn point"), *GetActorNameOrLabel());
+	ActiveSpawnPointName = ActiveSpawnPoint->GetFName();
 
-	UDataLibrary::SaveWorld(this);
+	OnActiveSpawnPointUpdateDelegate.Broadcast(OldSpawnPoint, ActiveSpawnPoint);
+
+	UE_LOG(LogTemp, Display, TEXT("%s: updated spawn point %s"), *GetActorNameOrLabel(),
+	       *ActiveSpawnPoint->GetActorNameOrLabel());
 
 	return true;
 }

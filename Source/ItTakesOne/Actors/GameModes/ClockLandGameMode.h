@@ -13,4 +13,6 @@ class ITTAKESONE_API AClockLandGameMode : public APlayableGameModeBase
 
 public:
 	AClockLandGameMode();
+
+	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData() override;
 };

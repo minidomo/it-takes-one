@@ -13,4 +13,6 @@ class ITTAKESONE_API AHomeGameMode : public APlayableGameModeBase
 
 public:
 	AHomeGameMode();
+
+	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData() override;
 };

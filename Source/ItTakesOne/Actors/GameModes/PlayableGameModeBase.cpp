@@ -2,9 +2,14 @@
 
 #include "PlayableGameModeBase.h"
 
+#include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
 #include "ItTakesOne/Actors/GameStates/PlayableGameStateBase.h"
+#include "ItTakesOne/Framework/MainGameInstance.h"
 #include "ItTakesOne/Framework/MainWorldSettings.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 APlayableGameModeBase::APlayableGameModeBase()
 {
@@ -83,4 +88,82 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 	}
 
 	return PlayerStart;
+}
+
+void APlayableGameModeBase::LoadSaveGame()
+{
+	UE_LOG(LogTemp, Display, TEXT("%s: loading map data"), *GetActorNameOrLabel());
+
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	auto ContentData = GameInstance->GetContentData();
+	auto& WorldData = ContentData->TestWorld;
+
+	if (WorldData.bInitialized)
+	{
+		for (FActorIterator It(GetWorld()); It; ++It)
+		{
+			auto Actor = *It;
+			auto SavableActor = Cast<ISavableActorInterface>(Actor);
+			if (SavableActor)
+			{
+				for (auto& ActorData : WorldData.Actors)
+				{
+					if (ActorData.ActorName == Actor->GetFName())
+					{
+						FMemoryReader MemReader(ActorData.ByteData);
+						FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+						Ar.ArIsSaveGame = true;
+						Actor->Serialize(Ar);
+						SavableActor->OnActorLoaded();
+					}
+				}
+			}
+		}
+	}
+}
+
+void APlayableGameModeBase::WriteSaveGame()
+{
+	UE_LOG(LogTemp, Display, TEXT("%s: saving map data"), *GetActorNameOrLabel());
+	auto WorldData = GetPlayableWorldSaveData();
+	if (!WorldData) { return; }
+
+	WorldData->Actors.Empty();
+
+	for (FActorIterator It(GetWorld()); It; ++It)
+	{
+		auto Actor = *It;
+		auto SavableActor = Cast<ISavableActorInterface>(Actor);
+		if (IsValid(Actor) && SavableActor)
+		{
+			FActorSaveData ActorData;
+			ActorData.ActorName = Actor->GetFName();
+
+			FMemoryWriter MemWriter(ActorData.ByteData);
+			FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+			Ar.ArIsSaveGame = true;
+			Actor->Serialize(Ar);
+
+			WorldData->Actors.Add(ActorData);
+		}
+	}
+
+	WorldData->bInitialized = true;
+
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	auto ContentData = GameInstance->GetContentData();
+	UGameplayStatics::SaveGameToSlot(ContentData, GameInstance->GetContentSlotName(), 0);
+}
+
+FPlayableWorldSaveData* APlayableGameModeBase::GetPlayableWorldSaveData()
+{
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
+	return &ContentData->TestWorld;
+}
+
+void APlayableGameModeBase::PreInitializeComponents()
+{
+	Super::PreInitializeComponents();
+	LoadSaveGame();
 }
