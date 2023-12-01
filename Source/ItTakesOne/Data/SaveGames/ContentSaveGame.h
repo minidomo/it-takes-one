@@ -28,10 +28,16 @@ public:
 	FPlayableWorldSaveData()
 	{
 		bInitialized = false;
+		bPlaythroughComplete = false;
 	}
 
 	UPROPERTY()
 	bool bInitialized;
+
+	UPROPERTY()
+	bool bPlaythroughComplete;
+
+	// TODO include player state
 
 	UPROPERTY()
 	TArray<FActorSaveData> Actors;

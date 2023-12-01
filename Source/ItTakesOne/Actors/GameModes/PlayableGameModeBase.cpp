@@ -93,27 +93,40 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 void APlayableGameModeBase::LoadSaveGame()
 {
 	auto WorldData = GetPlayableWorldSaveData();
-	if (!WorldData) { return; }
+
+	if (!WorldData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: attempted to save world data but storage data was not set"),
+		       *GetActorNameOrLabel());
+		return;
+	}
+
+	if (!WorldData->bInitialized)
+	{
+		UE_LOG(LogTemp, Display, TEXT("%s: world data was not marked as initialized, skipping loading"),
+		       *GetActorNameOrLabel());
+		return;
+	}
+
 	UE_LOG(LogTemp, Display, TEXT("%s: loading map data"), *GetActorNameOrLabel());
 
-	if (WorldData->bInitialized)
+	// TODO spawn actors if necessary
+
+	for (FActorIterator It(GetWorld()); It; ++It)
 	{
-		for (FActorIterator It(GetWorld()); It; ++It)
+		auto Actor = *It;
+		auto SavableActor = Cast<ISavableActorInterface>(Actor);
+		if (SavableActor)
 		{
-			auto Actor = *It;
-			auto SavableActor = Cast<ISavableActorInterface>(Actor);
-			if (SavableActor)
+			for (auto& ActorData : WorldData->Actors)
 			{
-				for (auto& ActorData : WorldData->Actors)
+				if (ActorData.ActorName == Actor->GetFName())
 				{
-					if (ActorData.ActorName == Actor->GetFName())
-					{
-						FMemoryReader MemReader(ActorData.ByteData);
-						FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
-						Ar.ArIsSaveGame = true;
-						Actor->Serialize(Ar);
-						SavableActor->OnActorLoaded();
-					}
+					FMemoryReader MemReader(ActorData.ByteData);
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+					Ar.ArIsSaveGame = true;
+					Actor->Serialize(Ar);
+					SavableActor->OnActorLoaded();
 				}
 			}
 		}
