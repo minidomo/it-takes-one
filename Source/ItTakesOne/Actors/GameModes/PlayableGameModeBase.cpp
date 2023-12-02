@@ -135,15 +135,24 @@ void APlayableGameModeBase::LoadSaveGame()
 				return Element.Name == Actor->GetFName();
 			});
 
-			if (Data && !Data->bDeferLoad && ContentData->LoadActor(Actor, *Data))
+			if (Data)
 			{
-				SavableActor->OnActorLoaded();
-				LoadedActors.Add(Data->Name);
+				if (!Data->bDeferLoad && ContentData->LoadActor(Actor, *Data))
+				{
+					SavableActor->OnActorLoaded();
+					LoadedActors.Add(Data->Name);
+				}
+			}
+			else
+			{
+				// having no data means this actor was destroyed at runtime, so destroy it
+				Actor->Destroy();
 			}
 		}
 	}
 
-	// spawn actors
+
+	// spawn actors that were created at runtime 
 	for (auto& Data : WorldData->Actors)
 	{
 		if (Data.bDeferLoad) { continue; }
@@ -153,12 +162,12 @@ void APlayableGameModeBase::LoadSaveGame()
 			FActorSpawnParameters Params;
 			Params.Name = Data.Name;
 
-			// defer spawning maybe?
 			AActor* Actor = World->SpawnActor(Data.Class, &Data.Transform, Params);
 			if (ContentData->LoadActor(Actor, Data))
 			{
 				const auto SavableActor = Cast<ISavableActorInterface>(Actor);
 				SavableActor->OnActorLoaded();
+				LoadedActors.Add(Data.Name);
 			}
 			else
 			{
