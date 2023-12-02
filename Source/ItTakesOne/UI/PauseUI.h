@@ -22,9 +22,6 @@ public:
 	class UButton* ResumeButton;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	class UButton* MapSelectionButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UButton* MenuButton;
 
 	UPROPERTY(EditAnywhere, Category = "Class Type")
@@ -37,9 +34,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnResumeButtonClick();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnMapSelectionButtonClick();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnMenuButtonClick();
