@@ -12,11 +12,26 @@ struct FActorSaveData
 	GENERATED_BODY()
 
 public:
+	FActorSaveData()
+	{
+		bLoaded = false;
+		Class = nullptr;
+	}
+
 	UPROPERTY()
-	FName ActorName;
+	FName Name;
+
+	UPROPERTY()
+	UClass* Class;
+
+	UPROPERTY()
+	FTransform Transform;
 
 	UPROPERTY()
 	TArray<uint8> ByteData;
+
+	// internal use
+	bool bLoaded;
 };
 
 USTRUCT()
@@ -62,4 +77,7 @@ public:
 
 	UPROPERTY()
 	FPlayableWorldSaveData SkyLand;
+
+	bool LoadActor(AActor* Actor, FActorSaveData& Data);
+	bool SaveActor(AActor* Actor, FActorSaveData& Data);
 };

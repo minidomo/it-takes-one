@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "MainGameInstance.generated.h"
 
+class USaveGame;
 class UContentSaveGame;
 class USettingsSaveGame;
 
@@ -38,4 +39,7 @@ public:
 	FORCEINLINE UContentSaveGame* GetContentData() const { return ContentData; }
 	FORCEINLINE FString GetSettingsSlotName() const { return SettingsSlotName; }
 	FORCEINLINE FString GetContentSlotName() const { return ContentSlotName; }
+
+	static USaveGame* LoadOrCreateSaveGame(TSubclassOf<USaveGame> SaveGameClass, const FString& SlotName,
+	                                       const int32 UserIndex = 0);
 };

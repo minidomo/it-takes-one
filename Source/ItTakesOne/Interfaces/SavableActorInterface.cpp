@@ -5,11 +5,3 @@
 void ISavableActorInterface::OnActorLoaded()
 {
 }
-
-void ISavableActorInterface::ImportActorData(const FActorSaveData& In)
-{
-}
-
-void ISavableActorInterface::ExportActorData(FActorSaveData& Out)
-{
-}

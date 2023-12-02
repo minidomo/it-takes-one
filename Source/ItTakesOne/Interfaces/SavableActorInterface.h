@@ -19,6 +19,4 @@ class ITTAKESONE_API ISavableActorInterface
 
 public:
 	virtual void OnActorLoaded();
-	virtual void ImportActorData(const FActorSaveData& In);
-	virtual void ExportActorData(FActorSaveData& Out);
 };
