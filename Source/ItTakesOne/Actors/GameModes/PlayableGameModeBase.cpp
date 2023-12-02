@@ -5,6 +5,7 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
 #include "ItTakesOne/Actors/GameStates/PlayableGameStateBase.h"
+#include "ItTakesOne/Actors/PlayerStates/PlayablePlayerStateBase.h"
 #include "ItTakesOne/Framework/MainGameInstance.h"
 #include "ItTakesOne/Framework/MainWorldSettings.h"
 #include "ItTakesOne/Interfaces/SavableActorInterface.h"
@@ -32,6 +33,8 @@ APlayableGameModeBase::APlayableGameModeBase()
 	{
 		GameStateClass = GameStateBPClass.Class;
 	}
+
+	PlayerStateClass = APlayablePlayerStateBase::StaticClass();
 }
 
 void APlayableGameModeBase::BeginPlay()
@@ -47,6 +50,12 @@ void APlayableGameModeBase::OnPlayerDied(ACharacter* Character, AController* Con
 	UE_LOG(LogTemp, Display, TEXT("%s: player died"), *GetActorNameOrLabel());
 	Controller->StartSpot.Reset();
 	RestartPlayer(Controller);
+}
+
+void APlayableGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+	LoadPlayerState(NewPlayer->GetPlayerState<APlayerState>());
 }
 
 AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
@@ -125,7 +134,7 @@ void APlayableGameModeBase::LoadSaveGame()
 				return Element.Name == Actor->GetFName();
 			});
 
-			if (Data && ContentData->LoadActor(Actor, *Data))
+			if (Data && !Data->bDeferLoad && ContentData->LoadActor(Actor, *Data))
 			{
 				SavableActor->OnActorLoaded();
 			}
@@ -135,6 +144,8 @@ void APlayableGameModeBase::LoadSaveGame()
 	// spawn actors
 	for (auto& Data : WorldData->Actors)
 	{
+		if (Data.bDeferLoad) { continue; }
+
 		if (!Data.bLoaded)
 		{
 			FActorSpawnParameters Params;
@@ -154,8 +165,6 @@ void APlayableGameModeBase::LoadSaveGame()
 			}
 		}
 	}
-
-	// TODO handling loading of player state when player logs in ?
 }
 
 void APlayableGameModeBase::WriteSaveGame()
@@ -204,6 +213,35 @@ FPlayableWorldSaveData* APlayableGameModeBase::GetPlayableWorldSaveData()
 	const auto GameInstance = GetGameInstance<UMainGameInstance>();
 	const auto ContentData = GameInstance->GetContentData();
 	return &ContentData->TestWorld;
+}
+
+void APlayableGameModeBase::LoadPlayerState(APlayerState* PlayerState)
+{
+	const auto CurPlayerState = Cast<APlayablePlayerStateBase>(PlayerState);
+
+	if (!CurPlayerState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: attempted to load data into player state but received unexpected type"),
+		       *GetActorNameOrLabel());
+		return;
+	}
+
+	const auto WorldData = GetPlayableWorldSaveData();
+
+	if (!WorldData || !WorldData->bInitialized) { return; }
+
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
+
+	FActorSaveData* Data = WorldData->Actors.FindByPredicate([&](const FActorSaveData& Element)
+	{
+		return Element.Name == CurPlayerState->GetFName();
+	});
+
+	if (Data && ContentData->LoadActor(CurPlayerState, *Data))
+	{
+		CurPlayerState->OnActorLoaded();
+	}
 }
 
 void APlayableGameModeBase::PreInitializeComponents()

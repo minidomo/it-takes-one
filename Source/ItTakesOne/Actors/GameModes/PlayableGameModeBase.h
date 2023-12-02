@@ -28,11 +28,13 @@ protected:
 	virtual void OnPlayerDied(ACharacter* Character, AController* Controller);
 
 public:
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	virtual void PreInitializeComponents() override;
 
-	virtual void LoadSaveGame();
-	virtual void WriteSaveGame();
-
 	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData();
+
+	void LoadPlayerState(APlayerState* PlayerState);
+	void LoadSaveGame();
+	void WriteSaveGame();
 };

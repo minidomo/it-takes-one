@@ -2,6 +2,7 @@
 
 #include "ContentSaveGame.h"
 
+#include "GameFramework/PlayerState.h"
 #include "ItTakesOne/Data/SaveGameArchive.h"
 
 UContentSaveGame::UContentSaveGame()
@@ -36,6 +37,7 @@ bool UContentSaveGame::SaveActor(AActor* Actor, FActorSaveData& Data)
 	Data.Name = Actor->GetFName();
 	Data.Class = Actor->GetClass();
 	Data.Transform = Actor->GetTransform();
+	Data.bDeferLoad = Actor->IsA(APlayerState::StaticClass());
 
 	FMemoryWriter MemWriter(Data.ByteData);
 	FSaveGameArchive Ar(MemWriter);

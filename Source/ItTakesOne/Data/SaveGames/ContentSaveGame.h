@@ -15,6 +15,7 @@ public:
 	FActorSaveData()
 	{
 		bLoaded = false;
+		bDeferLoad = false;
 		Class = nullptr;
 	}
 
@@ -28,9 +29,12 @@ public:
 	FTransform Transform;
 
 	UPROPERTY()
+	bool bDeferLoad;
+
+	UPROPERTY()
 	TArray<uint8> ByteData;
 
-	// internal use
+	// doesn't need to be saved
 	bool bLoaded;
 };
 
@@ -51,8 +55,6 @@ public:
 
 	UPROPERTY()
 	bool bPlaythroughComplete;
-
-	// TODO include player state
 
 	UPROPERTY()
 	TArray<FActorSaveData> Actors;
