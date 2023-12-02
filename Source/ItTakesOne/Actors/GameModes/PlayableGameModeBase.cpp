@@ -5,11 +5,11 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerStart.h"
 #include "ItTakesOne/Actors/GameStates/PlayableGameStateBase.h"
+#include "ItTakesOne/Actors/PlayerStates/PlayablePlayerStateBase.h"
 #include "ItTakesOne/Framework/MainGameInstance.h"
 #include "ItTakesOne/Framework/MainWorldSettings.h"
 #include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "Kismet/GameplayStatics.h"
-#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 
 APlayableGameModeBase::APlayableGameModeBase()
 {
@@ -33,6 +33,8 @@ APlayableGameModeBase::APlayableGameModeBase()
 	{
 		GameStateClass = GameStateBPClass.Class;
 	}
+
+	PlayerStateClass = APlayablePlayerStateBase::StaticClass();
 }
 
 void APlayableGameModeBase::BeginPlay()
@@ -50,6 +52,12 @@ void APlayableGameModeBase::OnPlayerDied(ACharacter* Character, AController* Con
 	RestartPlayer(Controller);
 }
 
+void APlayableGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+	LoadPlayerState(NewPlayer->GetPlayerState<APlayerState>());
+}
+
 AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 {
 	AActor* PlayerStart = nullptr;
@@ -58,10 +66,10 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 	{
 		PlayerStart = CurGameState->GetActiveSpawnPoint();
 
-		if (PlayerStart)
-		{
-			UE_LOG(LogTemp, Display, TEXT("%s: use game state active spawn point"), *GetActorNameOrLabel());
-		}
+		// if (PlayerStart)
+		// {
+		// 	UE_LOG(LogTemp, Display, TEXT("%s: use game state active spawn point"), *GetActorNameOrLabel());
+		// }
 	}
 
 	if (!PlayerStart)
@@ -70,10 +78,10 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 		{
 			PlayerStart = WorldSettings->GetDefaultSpawnPoint();
 
-			if (PlayerStart)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s: use world settings default spawn point"), *GetActorNameOrLabel());
-			}
+			// if (PlayerStart)
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("%s: use world settings default spawn point"), *GetActorNameOrLabel());
+			// }
 		}
 	}
 
@@ -92,29 +100,70 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 
 void APlayableGameModeBase::LoadSaveGame()
 {
-	auto WorldData = GetPlayableWorldSaveData();
-	if (!WorldData) { return; }
+	const auto WorldData = GetPlayableWorldSaveData();
+
+	if (!WorldData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: attempted to load world data but storage data is null"),
+		       *GetActorNameOrLabel());
+		return;
+	}
+
+	if (!WorldData->bInitialized)
+	{
+		UE_LOG(LogTemp, Display, TEXT("%s: world data was not marked as initialized, skipping loading"),
+		       *GetActorNameOrLabel());
+		return;
+	}
+
 	UE_LOG(LogTemp, Display, TEXT("%s: loading map data"), *GetActorNameOrLabel());
 
-	if (WorldData->bInitialized)
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
+	const auto World = GetWorld();
+	TSet<FName> LoadedActors;
+
+	// give data to actors that already exist in the level
+	for (FActorIterator It(World); It; ++It)
 	{
-		for (FActorIterator It(GetWorld()); It; ++It)
+		const auto Actor = *It;
+		const auto SavableActor = Cast<ISavableActorInterface>(Actor);
+		if (IsValid(Actor) && SavableActor)
 		{
-			auto Actor = *It;
-			auto SavableActor = Cast<ISavableActorInterface>(Actor);
-			if (SavableActor)
+			FActorSaveData* Data = WorldData->Actors.FindByPredicate([&](const FActorSaveData& Element)
 			{
-				for (auto& ActorData : WorldData->Actors)
-				{
-					if (ActorData.ActorName == Actor->GetFName())
-					{
-						FMemoryReader MemReader(ActorData.ByteData);
-						FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
-						Ar.ArIsSaveGame = true;
-						Actor->Serialize(Ar);
-						SavableActor->OnActorLoaded();
-					}
-				}
+				return Element.Name == Actor->GetFName();
+			});
+
+			if (Data && !Data->bDeferLoad && ContentData->LoadActor(Actor, *Data))
+			{
+				SavableActor->OnActorLoaded();
+				LoadedActors.Add(Data->Name);
+			}
+		}
+	}
+
+	// spawn actors
+	for (auto& Data : WorldData->Actors)
+	{
+		if (Data.bDeferLoad) { continue; }
+
+		if (!LoadedActors.Contains(Data.Name))
+		{
+			FActorSpawnParameters Params;
+			Params.Name = Data.Name;
+
+			// defer spawning maybe?
+			AActor* Actor = World->SpawnActor(Data.Class, &Data.Transform, Params);
+			if (ContentData->LoadActor(Actor, Data))
+			{
+				const auto SavableActor = Cast<ISavableActorInterface>(Actor);
+				SavableActor->OnActorLoaded();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s: actor failed to load: %s"), *GetActorNameOrLabel(),
+				       *Data.Name.ToString());
 			}
 		}
 	}
@@ -122,34 +171,42 @@ void APlayableGameModeBase::LoadSaveGame()
 
 void APlayableGameModeBase::WriteSaveGame()
 {
-	auto WorldData = GetPlayableWorldSaveData();
-	if (!WorldData) { return; }
+	const auto WorldData = GetPlayableWorldSaveData();
+
+	if (!WorldData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: attempted to save world data but storage data was not set"),
+		       *GetActorNameOrLabel());
+		return;
+	}
+
 	UE_LOG(LogTemp, Display, TEXT("%s: saving map data"), *GetActorNameOrLabel());
+
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
 
 	WorldData->Actors.Empty();
 
 	for (FActorIterator It(GetWorld()); It; ++It)
 	{
-		auto Actor = *It;
-		auto SavableActor = Cast<ISavableActorInterface>(Actor);
+		const auto Actor = *It;
+		const auto SavableActor = Cast<ISavableActorInterface>(Actor);
 		if (IsValid(Actor) && SavableActor)
 		{
-			FActorSaveData ActorData;
-			ActorData.ActorName = Actor->GetFName();
-
-			FMemoryWriter MemWriter(ActorData.ByteData);
-			FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
-			Ar.ArIsSaveGame = true;
-			Actor->Serialize(Ar);
-
-			WorldData->Actors.Add(ActorData);
+			FActorSaveData Data;
+			if (ContentData->SaveActor(Actor, Data))
+			{
+				WorldData->Actors.Add(Data);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s: actor failed to save: %s"), *GetActorNameOrLabel(),
+				       *Actor->GetActorNameOrLabel());
+			}
 		}
 	}
 
 	WorldData->bInitialized = true;
-
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	auto ContentData = GameInstance->GetContentData();
 	UGameplayStatics::SaveGameToSlot(ContentData, GameInstance->GetContentSlotName(), 0);
 }
 
@@ -160,8 +217,37 @@ FPlayableWorldSaveData* APlayableGameModeBase::GetPlayableWorldSaveData()
 	return &ContentData->TestWorld;
 }
 
-void APlayableGameModeBase::PreInitializeComponents()
+void APlayableGameModeBase::LoadPlayerState(APlayerState* PlayerState)
 {
-	Super::PreInitializeComponents();
+	const auto CurPlayerState = Cast<APlayablePlayerStateBase>(PlayerState);
+
+	if (!CurPlayerState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: attempted to load data into player state but received unexpected type"),
+		       *GetActorNameOrLabel());
+		return;
+	}
+
+	const auto WorldData = GetPlayableWorldSaveData();
+
+	if (!WorldData || !WorldData->bInitialized) { return; }
+
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
+
+	FActorSaveData* Data = WorldData->Actors.FindByPredicate([&](const FActorSaveData& Element)
+	{
+		return Element.Name == CurPlayerState->GetFName();
+	});
+
+	if (Data && ContentData->LoadActor(CurPlayerState, *Data))
+	{
+		CurPlayerState->OnActorLoaded();
+	}
+}
+
+void APlayableGameModeBase::InitGameState()
+{
+	Super::InitGameState();
 	LoadSaveGame();
 }

@@ -4,7 +4,6 @@
 
 #include "ItTakesOne/Data/SaveGames/ContentSaveGame.h"
 #include "ItTakesOne/Data/SaveGames/SettingsSaveGame.h"
-#include "ItTakesOne/Libraries/DataLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 UMainGameInstance::UMainGameInstance()
@@ -19,9 +18,9 @@ void UMainGameInstance::Init()
 	UE_LOG(LogTemp, Display, TEXT("%s: init"), *GetName());
 
 	ContentData = Cast<UContentSaveGame>(
-		UDataLibrary::LoadOrCreateGame(UContentSaveGame::StaticClass(), ContentSlotName));
+		LoadOrCreateSaveGame(UContentSaveGame::StaticClass(), ContentSlotName));
 	SettingsData = Cast<USettingsSaveGame>(
-		UDataLibrary::LoadOrCreateGame(USettingsSaveGame::StaticClass(), SettingsSlotName));
+		LoadOrCreateSaveGame(USettingsSaveGame::StaticClass(), SettingsSlotName));
 
 	if (ContentData)
 	{
@@ -45,5 +44,20 @@ void UMainGameInstance::Init()
 void UMainGameInstance::Shutdown()
 {
 	Super::Shutdown();
-	UE_LOG(LogTemp, Display, TEXT("%s: shutdown"), *GetName());
+	UE_LOG(LogTemp, Display, TEXT("%s: shutdown\n "), *GetName());
+}
+
+USaveGame* UMainGameInstance::LoadOrCreateSaveGame(TSubclassOf<USaveGame> SaveGameClass, const FString& SlotName,
+                                                   const int32 UserIndex)
+{
+	USaveGame* SaveGameInstance = UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex);
+
+	if (!SaveGameInstance)
+	{
+		UE_LOG(LogTemp, Display, TEXT("making new file for %s"), *SlotName);
+		SaveGameInstance = UGameplayStatics::CreateSaveGameObject(SaveGameClass);
+		UGameplayStatics::SaveGameToSlot(SaveGameInstance, SlotName, UserIndex);
+	}
+
+	return SaveGameInstance;
 }

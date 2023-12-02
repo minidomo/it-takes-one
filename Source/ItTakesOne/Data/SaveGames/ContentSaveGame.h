@@ -12,8 +12,23 @@ struct FActorSaveData
 	GENERATED_BODY()
 
 public:
+	FActorSaveData()
+	{
+		bDeferLoad = false;
+		Class = nullptr;
+	}
+
 	UPROPERTY()
-	FName ActorName;
+	FName Name;
+
+	UPROPERTY()
+	UClass* Class;
+
+	UPROPERTY()
+	FTransform Transform;
+
+	UPROPERTY()
+	bool bDeferLoad;
 
 	UPROPERTY()
 	TArray<uint8> ByteData;
@@ -28,10 +43,14 @@ public:
 	FPlayableWorldSaveData()
 	{
 		bInitialized = false;
+		bPlaythroughComplete = false;
 	}
 
 	UPROPERTY()
 	bool bInitialized;
+
+	UPROPERTY()
+	bool bPlaythroughComplete;
 
 	UPROPERTY()
 	TArray<FActorSaveData> Actors;
@@ -56,4 +75,7 @@ public:
 
 	UPROPERTY()
 	FPlayableWorldSaveData SkyLand;
+
+	bool LoadActor(AActor* Actor, FActorSaveData& Data);
+	bool SaveActor(AActor* Actor, FActorSaveData& Data);
 };

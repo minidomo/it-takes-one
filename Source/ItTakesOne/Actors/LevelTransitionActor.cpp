@@ -3,6 +3,7 @@
 
 #include "LevelTransitionActor.h"
 #include "Components/BoxComponent.h"
+#include "GameModes/PlayableGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "ItTakesOne/ItTakesOneCharacter.h"
 
@@ -22,30 +23,39 @@ ALevelTransitionActor::ALevelTransitionActor()
 
 	// Bind the overlap event
 	BoxCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &ALevelTransitionActor::OnOverlapBegin);
-
 }
 
 // Called when the game starts or when spawned
 void ALevelTransitionActor::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 // Called every frame
 void ALevelTransitionActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void ALevelTransitionActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ALevelTransitionActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+                                           UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                                           const FHitResult& SweepResult)
 {
 	if (OtherActor && (OtherActor != this))
 	{
 		// Assuming your player class is called AYourPlayerClass, replace it with your actual player class
 		if (OtherActor->IsA(AItTakesOneCharacter::StaticClass()))
 		{
+			// if player reaches the transition actor, the player has finished the level, so update the save file
+			if (const auto GameMode = Cast<APlayableGameModeBase>(GetWorld()->GetAuthGameMode()))
+			{
+				if (const auto SaveData = GameMode->GetPlayableWorldSaveData())
+				{
+					SaveData->bPlaythroughComplete = true;
+					GameMode->WriteSaveGame();
+				}
+			}
+
 			// Switch level on collision with player
 			UGameplayStatics::OpenLevel(this, LevelToLoad);
 		}

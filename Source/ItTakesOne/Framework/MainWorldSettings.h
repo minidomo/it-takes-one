@@ -29,6 +29,6 @@ protected:
 public:
 	virtual void PreInitializeComponents() override;
 	virtual void PostInitializeComponents() override;
-	
+
 	FORCEINLINE APlayerStart* GetDefaultSpawnPoint() const { return DefaultSpawnPoint; }
 };
