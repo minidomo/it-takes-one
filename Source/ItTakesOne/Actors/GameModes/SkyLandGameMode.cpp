@@ -1,6 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SkyLandGameMode.h"
+
+#include "GameFramework/PlayerState.h"
 #include "ItTakesOne/Framework/MainGameInstance.h"
 
 ASkyLandGameMode::ASkyLandGameMode()
@@ -10,6 +12,13 @@ ASkyLandGameMode::ASkyLandGameMode()
 	if (PlayerControllerBPClass.Class)
 	{
 		PlayerControllerClass = PlayerControllerBPClass.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<APlayerState> PlayerStateBPClass(
+		TEXT("/Game/Blueprints/Core/PlayerStates/BP_SkyPlayerState"));
+	if (PlayerStateBPClass.Class)
+	{
+		PlayerStateClass = PlayerStateBPClass.Class;
 	}
 }
 
