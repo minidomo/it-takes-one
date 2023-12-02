@@ -33,7 +33,7 @@ void APlayableGameStateBase::OnActorLoaded()
 		{
 			for (TActorIterator<APlayerStart> It(GetWorld(), APlayerStart::StaticClass()); It; ++It)
 			{
-				auto Actor = *It;
+				const auto Actor = *It;
 				if (Actor->GetFName() == ActiveSpawnPointName)
 				{
 					UpdateActiveSpawnPoint(Actor);
@@ -57,8 +57,8 @@ bool APlayableGameStateBase::UpdateActiveSpawnPoint(APlayerStart* NewActiveSpawn
 
 	OnActiveSpawnPointUpdateDelegate.Broadcast(OldSpawnPoint, ActiveSpawnPoint);
 
-	UE_LOG(LogTemp, Display, TEXT("%s: updated spawn point %s"), *GetActorNameOrLabel(),
-	       *ActiveSpawnPoint->GetActorNameOrLabel());
+	// UE_LOG(LogTemp, Display, TEXT("%s: updated spawn point %s"), *GetActorNameOrLabel(),
+	//        *ActiveSpawnPoint->GetActorNameOrLabel());
 
 	return true;
 }

@@ -25,12 +25,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	virtual void OnPlayerDied(ACharacter* Character, AController* Controller);
+	void OnPlayerDied(ACharacter* Character, AController* Controller);
 
 public:
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
-	virtual void PreInitializeComponents() override;
+	virtual void InitGameState() override;
 
 	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData();
 

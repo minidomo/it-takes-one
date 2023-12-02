@@ -22,8 +22,6 @@ bool UContentSaveGame::LoadActor(AActor* Actor, FActorSaveData& Data)
 	FMemoryReader MemReader(Data.ByteData);
 	FSaveGameArchive Ar(MemReader);
 	Actor->Serialize(Ar);
-
-	Data.bLoaded = true;
 	return true;
 }
 

@@ -14,7 +14,6 @@ struct FActorSaveData
 public:
 	FActorSaveData()
 	{
-		bLoaded = false;
 		bDeferLoad = false;
 		Class = nullptr;
 	}
@@ -33,9 +32,6 @@ public:
 
 	UPROPERTY()
 	TArray<uint8> ByteData;
-
-	// doesn't need to be saved
-	bool bLoaded;
 };
 
 USTRUCT()

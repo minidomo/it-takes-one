@@ -66,10 +66,10 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 	{
 		PlayerStart = CurGameState->GetActiveSpawnPoint();
 
-		if (PlayerStart)
-		{
-			UE_LOG(LogTemp, Display, TEXT("%s: use game state active spawn point"), *GetActorNameOrLabel());
-		}
+		// if (PlayerStart)
+		// {
+		// 	UE_LOG(LogTemp, Display, TEXT("%s: use game state active spawn point"), *GetActorNameOrLabel());
+		// }
 	}
 
 	if (!PlayerStart)
@@ -78,10 +78,10 @@ AActor* APlayableGameModeBase::ChoosePlayerStart_Implementation(AController* Pla
 		{
 			PlayerStart = WorldSettings->GetDefaultSpawnPoint();
 
-			if (PlayerStart)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s: use world settings default spawn point"), *GetActorNameOrLabel());
-			}
+			// if (PlayerStart)
+			// {
+			// 	UE_LOG(LogTemp, Warning, TEXT("%s: use world settings default spawn point"), *GetActorNameOrLabel());
+			// }
 		}
 	}
 
@@ -121,6 +121,7 @@ void APlayableGameModeBase::LoadSaveGame()
 	const auto GameInstance = GetGameInstance<UMainGameInstance>();
 	const auto ContentData = GameInstance->GetContentData();
 	const auto World = GetWorld();
+	TSet<FName> LoadedActors;
 
 	// give data to actors that already exist in the level
 	for (FActorIterator It(World); It; ++It)
@@ -137,6 +138,7 @@ void APlayableGameModeBase::LoadSaveGame()
 			if (Data && !Data->bDeferLoad && ContentData->LoadActor(Actor, *Data))
 			{
 				SavableActor->OnActorLoaded();
+				LoadedActors.Add(Data->Name);
 			}
 		}
 	}
@@ -146,23 +148,25 @@ void APlayableGameModeBase::LoadSaveGame()
 	{
 		if (Data.bDeferLoad) { continue; }
 
-		if (!Data.bLoaded)
+		if (!LoadedActors.Contains(Data.Name))
 		{
 			FActorSpawnParameters Params;
 			Params.Name = Data.Name;
 
+			// defer spawning maybe?
 			AActor* Actor = World->SpawnActor(Data.Class, &Data.Transform, Params);
 			if (ContentData->LoadActor(Actor, Data))
 			{
 				const auto SavableActor = Cast<ISavableActorInterface>(Actor);
 				SavableActor->OnActorLoaded();
 			}
-
-			if (!Data.bLoaded)
+			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("%s: actor failed to load: %s"), *GetActorNameOrLabel(),
 				       *Data.Name.ToString());
 			}
+
+			UE_LOG(LogTemp, Display, TEXT("%s: spawned %d"), *GetActorNameOrLabel(), !!Actor);
 		}
 	}
 }
@@ -244,8 +248,8 @@ void APlayableGameModeBase::LoadPlayerState(APlayerState* PlayerState)
 	}
 }
 
-void APlayableGameModeBase::PreInitializeComponents()
+void APlayableGameModeBase::InitGameState()
 {
-	Super::PreInitializeComponents();
+	Super::InitGameState();
 	LoadSaveGame();
 }
