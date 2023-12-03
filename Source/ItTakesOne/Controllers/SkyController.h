@@ -41,7 +41,8 @@ protected:
 	virtual void SetupInputComponent() override;
 
 	void OnJetHold();
-	void OnGliderPressed();
+	void OnGlideHold();
+	void OnGlideEnd();
 
 	UFUNCTION()
 	void OnHealthUpdate(float OldHealth, float NewHealth);

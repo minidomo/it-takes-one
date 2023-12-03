@@ -29,8 +29,8 @@ void ASkyController::SetupInputComponent()
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedInputComponent->BindAction(JetAction, ETriggerEvent::Triggered, this, &ASkyController::OnJetHold);
-		EnhancedInputComponent->BindAction(GliderAction, ETriggerEvent::Triggered, this,
-		                                   &ASkyController::OnGliderPressed);
+		EnhancedInputComponent->BindAction(GliderAction, ETriggerEvent::Triggered, this, &ASkyController::OnGlideHold);
+		EnhancedInputComponent->BindAction(GliderAction, ETriggerEvent::Completed, this, &ASkyController::OnGlideEnd);
 	}
 }
 
@@ -60,12 +60,21 @@ void ASkyController::OnJetHold()
 	}
 }
 
-void ASkyController::OnGliderPressed()
+void ASkyController::OnGlideHold()
 {
 	AItTakesOneCharacter* character = Cast<AItTakesOneCharacter>(this->GetCharacter());
 	if (character)
 	{
-		character->GliderEvent();
+		character->GlideHoldEvent();
+	}
+}
+
+void ASkyController::OnGlideEnd()
+{
+	AItTakesOneCharacter* character = Cast<AItTakesOneCharacter>(this->GetCharacter());
+	if (character)
+	{
+		character->GlideEndEvent();
 	}
 }
 

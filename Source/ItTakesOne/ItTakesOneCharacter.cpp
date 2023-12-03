@@ -9,7 +9,6 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Engine/GameEngine.h"
 #include "Components/DecalComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -55,6 +54,9 @@ AItTakesOneCharacter::AItTakesOneCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character)
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	GlideGravityScale = .1;
+	GetCharacterMovement()->GravityScale = 1.75;
 }
 
 
@@ -116,7 +118,7 @@ void AItTakesOneCharacter::HammerEvent()
 		}
 
 		// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
-		 // Array to hold all overlapping actors
+		// Array to hold all overlapping actors
 		TArray<AActor*> OverlappingActors;
 
 		// Get all actors that the character is currently overlapping
@@ -125,7 +127,8 @@ void AItTakesOneCharacter::HammerEvent()
 		// Loop through each actor
 		for (AActor* Actor : OverlappingActors)
 		{
-			if (Actor->IsA(ABreakableActor::StaticClass())) {
+			if (Actor->IsA(ABreakableActor::StaticClass()))
+			{
 				// Check if the actor is of the BreakableActor class
 				ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
 				if (BreakableActor != nullptr)
@@ -135,20 +138,44 @@ void AItTakesOneCharacter::HammerEvent()
 				}
 			}
 
-			if (Actor->IsA(ATriggerActor::StaticClass())) {
+			if (Actor->IsA(ATriggerActor::StaticClass()))
+			{
 				ATriggerActor* tactor = Cast<ATriggerActor>(Actor);
 				tactor->OnTriggerDelegate.Broadcast();
 				tactor->Destroy();
 			}
-
 		}
 	}
 }
 
-void AItTakesOneCharacter::StartPositionRecording() {
+void AItTakesOneCharacter::JetEvent()
+{
+	LaunchCharacter(FVector(0, 0, 50), false, false);
+}
 
-	GetWorld()->GetTimerManager().SetTimer(PositionHistoryTimerHandle, this, &AItTakesOneCharacter::UpdatePositionHistory, 0.2f, true);
-	
+void AItTakesOneCharacter::GlideHoldEvent()
+{
+	const bool Falling = GetCharacterMovement()->Velocity.Z < 0;
+
+	if (Falling)
+	{
+		GetCharacterMovement()->GravityScale = GlideGravityScale;
+	}
+	else
+	{
+		GetCharacterMovement()->GravityScale = InitialGravityScale;
+	}
+}
+
+void AItTakesOneCharacter::GlideEndEvent()
+{
+	GetCharacterMovement()->GravityScale = InitialGravityScale;
+}
+
+void AItTakesOneCharacter::StartPositionRecording()
+{
+	GetWorld()->GetTimerManager().SetTimer(PositionHistoryTimerHandle, this,
+	                                       &AItTakesOneCharacter::UpdatePositionHistory, 0.2f, true);
 }
 
 void AItTakesOneCharacter::UpdatePositionHistory()
@@ -165,22 +192,28 @@ void AItTakesOneCharacter::UpdatePositionHistory()
 	PlaceFootstepDecals();
 }
 
+void AItTakesOneCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	InitialGravityScale = GetCharacterMovement()->GravityScale;
+}
+
 void AItTakesOneCharacter::PlaceFootstepDecals()
 {
-		float HalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-		FVector FloorPosition = GetActorLocation() - FVector(0.0f, 0.0f, HalfHeight);
-		FVector DecalPosition = FloorPosition + FVector(0.0f, 0.0f, 0.0f);
-		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), FootstepDecalMaterial, DecalSize, DecalPosition, FRotator(0.f, 0.f, 0.f), 3.0f);
+	float HalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	FVector FloorPosition = GetActorLocation() - FVector(0.0f, 0.0f, HalfHeight);
+	FVector DecalPosition = FloorPosition + FVector(0.0f, 0.0f, 0.0f);
+	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), FootstepDecalMaterial, DecalSize,
+	                                                                DecalPosition, FRotator(0.f, 0.f, 0.f), 3.0f);
 
-		if (Decal)
-		{
-			Decal->SetFadeScreenSize(0.0001f);
-		}
+	if (Decal)
+	{
+		Decal->SetFadeScreenSize(0.0001f);
+	}
 }
 
 void AItTakesOneCharacter::ClockEvent()
 {
-
 	if (Controller != nullptr)
 	{
 		if (GEngine)
@@ -193,6 +226,5 @@ void AItTakesOneCharacter::ClockEvent()
 			// Move the character to the position from 3 seconds ago
 			SetActorLocation(PositionHistory[0]);
 		}
-		
 	}
 }
