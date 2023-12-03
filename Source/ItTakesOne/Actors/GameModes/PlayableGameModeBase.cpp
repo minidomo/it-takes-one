@@ -221,9 +221,12 @@ void APlayableGameModeBase::WriteSaveGame()
 
 FPlayableWorldSaveData* APlayableGameModeBase::GetPlayableWorldSaveData()
 {
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	const auto ContentData = GameInstance->GetContentData();
-	return &ContentData->TestWorld;
+	if (const auto GameInstance = GetGameInstance<UMainGameInstance>())
+	{
+		const auto ContentData = GameInstance->GetContentData();
+		return &ContentData->TestWorld;
+	}
+	return nullptr;
 }
 
 void APlayableGameModeBase::LoadPlayerState(APlayerState* PlayerState)

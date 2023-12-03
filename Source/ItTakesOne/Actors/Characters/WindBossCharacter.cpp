@@ -3,14 +3,14 @@
 #include "WindBossCharacter.h"
 
 #include "Components/CapsuleComponent.h"
-#include "ItTakesOne/Actors/Attacks/RingWave.h"
-#include "ItTakesOne/Actors/Attacks/Rock.h"
+#include "ItTakesOne/Actors/Boss/Attacks/RingWave.h"
+#include "ItTakesOne/Actors/Boss/Attacks/Rock.h"
 
 AWindBossCharacter::AWindBossCharacter()
 {
 	BossName = "Wind Legend";
-	Health = 500.f;
-	MaxHealth = 500.f;
+	Health = 400.f;
+	MaxHealth = 400.f;
 }
 
 void AWindBossCharacter::BeginPlay()
@@ -43,11 +43,16 @@ void AWindBossCharacter::RockThrowAttack()
 	for (uint32 Index = 0; Index < MaxActors; ++Index)
 	{
 		const FVector Origin = GetActorLocation() + Direction * GetCapsuleComponent()->GetScaledCapsuleRadius();
-		const auto Rock = GetWorld()->SpawnActor<ARock>(RockClass, Origin, Direction.Rotation());
-		Rock->SetSpeed(4000);
 
-		Rock->SetDirection(Direction);
-		Actors.Add(Rock);
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		const auto Rock = GetWorld()->SpawnActor<ARock>(RockClass, Origin, Direction.Rotation(), Params);
+		if (IsValid(Rock))
+		{
+			Rock->SetDirection(Direction);
+			Actors.Add(Rock);
+		}
 	}
 
 

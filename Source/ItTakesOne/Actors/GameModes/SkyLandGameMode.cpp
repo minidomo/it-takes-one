@@ -2,7 +2,9 @@
 
 #include "SkyLandGameMode.h"
 
+#include "NavigationSystem.h"
 #include "GameFramework/PlayerState.h"
+#include "ItTakesOne/Actors/Boss/CoreCrystal.h"
 #include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 #include "ItTakesOne/Actors/PlayerStates/SkyPlayerState.h"
 #include "ItTakesOne/Framework/MainGameInstance.h"
@@ -27,9 +29,12 @@ ASkyLandGameMode::ASkyLandGameMode()
 
 FPlayableWorldSaveData* ASkyLandGameMode::GetPlayableWorldSaveData()
 {
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	const auto ContentData = GameInstance->GetContentData();
-	return &ContentData->SkyLand;
+	if (const auto GameInstance = GetGameInstance<UMainGameInstance>())
+	{
+		const auto ContentData = GameInstance->GetContentData();
+		return &ContentData->SkyLand;
+	}
+	return nullptr;
 }
 
 void ASkyLandGameMode::BeginPlay()
@@ -49,6 +54,10 @@ void ASkyLandGameMode::BeginPlay()
 	{
 		BossCharacter->OnHealthUpdateDelegate.AddDynamic(this, &ASkyLandGameMode::OnBossHealthUpdate);
 	}
+
+	OnCoreCrystalDestroyedDelegate.AddDynamic(this, &ASkyLandGameMode::OnCoreCrystalDestroyed);
+
+	SpawnCoreCrystal();
 }
 
 void ASkyLandGameMode::OnPlayerHealthUpdate(float OldHealth, float NewHealth)
@@ -59,4 +68,29 @@ void ASkyLandGameMode::OnPlayerHealthUpdate(float OldHealth, float NewHealth)
 void ASkyLandGameMode::OnBossHealthUpdate(float OldHealth, float NewHealth)
 {
 	UE_LOG(LogTemp, Display, TEXT("%s: boss hp %f -> %f"), *GetActorNameOrLabel(), OldHealth, NewHealth);
+}
+
+void ASkyLandGameMode::OnCoreCrystalDestroyed()
+{
+	SpawnCoreCrystal();
+}
+
+void ASkyLandGameMode::SpawnCoreCrystal()
+{
+	FVector Location;
+
+	if (BossCharacter)
+	{
+		if (const auto NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem()))
+		{
+			FNavLocation Result;
+			NavSystem->GetRandomReachablePointInRadius(BossCharacter->GetActorLocation(), 3000.f, Result);
+			Location = Result.Location;
+		}
+	}
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	GetWorld()->SpawnActor<ACoreCrystal>(CoreCrystalClass, Location, FRotator::ZeroRotator, Params);
 }
