@@ -49,6 +49,9 @@ protected:
 	UPROPERTY(EditAnywhere, SaveGame)
 	uint32 ActorsPerRingWave;
 
+	bool bRockThrowAttack;
+	bool bRingWaveAttack;
+
 public:
 	UPROPERTY()
 	FOnHealthUpdateDelegate OnHealthUpdateDelegate;
@@ -57,8 +60,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsRockThrowAttack() const { return bRockThrowAttack; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsRingWaveAttack() const { return bRingWaveAttack; }
+
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+
+	virtual void Tick(float DeltaSeconds) override;
 
 	void ApplyDamage(float Damage);
 
