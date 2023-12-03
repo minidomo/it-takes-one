@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "Actors/GameModes/PlayableGameModeBase.h"
+#include "Actors/HomeMap/TriggerActor.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AItTakesOneCharacter
@@ -124,13 +125,22 @@ void AItTakesOneCharacter::HammerEvent()
 		// Loop through each actor
 		for (AActor* Actor : OverlappingActors)
 		{
-			// Check if the actor is of the BreakableActor class
-			ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
-			if (BreakableActor != nullptr)
-			{
-				// Destroy the BreakableActor
-				BreakableActor->Destroy();
+			if (Actor->IsA(ABreakableActor::StaticClass())) {
+				// Check if the actor is of the BreakableActor class
+				ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
+				if (BreakableActor != nullptr)
+				{
+					// Destroy the BreakableActor
+					BreakableActor->Destroy();
+				}
 			}
+
+			if (Actor->IsA(ATriggerActor::StaticClass())) {
+				ATriggerActor* tactor = Cast<ATriggerActor>(Actor);
+				tactor->OnTriggerDelegate.Broadcast();
+				tactor->Destroy();
+			}
+
 		}
 	}
 }
