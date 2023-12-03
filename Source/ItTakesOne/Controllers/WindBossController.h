@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BossControllerBase.h"
+#include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 #include "WindBossController.generated.h"
 
 UCLASS()
@@ -16,7 +17,7 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere, SaveGame)
-	FName ActionNameKey;
+	FName ActionKey;
 
 	UPROPERTY(EditAnywhere, SaveGame)
 	FName ReadyKey;
@@ -27,7 +28,6 @@ protected:
 public:
 	virtual void OnAttackComplete() override;
 
-	TArray<FName> GetAttackOptions();
-	FName GetRandomAttack();
-	void ExecuteAttack(FName AttackName);
+	EWindBossAttack GetRandomAttack();
+	void ExecuteAttack(EWindBossAttack Attack);
 };

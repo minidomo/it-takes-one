@@ -11,6 +11,7 @@ AWindBossCharacter::AWindBossCharacter()
 	BossName = "Wind Legend";
 	Health = 400.f;
 	MaxHealth = 400.f;
+	ActorsPerRingWave = 5;
 }
 
 void AWindBossCharacter::BeginPlay()
@@ -33,13 +34,12 @@ void AWindBossCharacter::RingWaveAttack()
 	const FVector Direction = (PlayerLocation - GetActorLocation()).GetSafeNormal();
 
 	TArray<AActor*> Actors;
-	constexpr uint32 MaxActors = 5;
 	const float DeltaZ = PlayerHeight;
 
 	FVector Location = GetActorLocation();
-	Location.Z -= DeltaZ * MaxActors / 2;
+	Location.Z -= DeltaZ * ActorsPerRingWave / 2;
 
-	for (uint32 Index = 0; Index < MaxActors; ++Index)
+	for (uint32 Index = 0; Index < ActorsPerRingWave; ++Index)
 	{
 		const FVector Origin = Location + Direction * GetCapsuleComponent()->GetScaledCapsuleRadius();
 
@@ -61,8 +61,6 @@ void AWindBossCharacter::RingWaveAttack()
 	{
 		Actor->SetActorTickEnabled(true);
 	}
-
-	OnAttackCompleteDelegate.Broadcast();
 }
 
 void AWindBossCharacter::RockThrowAttack()
@@ -71,32 +69,39 @@ void AWindBossCharacter::RockThrowAttack()
 	const FVector Direction = (PlayerLocation - GetActorLocation()).GetSafeNormal();
 
 	TArray<AActor*> Actors;
-	constexpr uint32 MaxActors = 1;
+	const FVector Origin = GetActorLocation() + Direction * GetCapsuleComponent()->GetScaledCapsuleRadius();
 
-	for (uint32 Index = 0; Index < MaxActors; ++Index)
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	const auto Rock = GetWorld()->SpawnActor<ARock>(RockClass, Origin, Direction.Rotation(), Params);
+	if (IsValid(Rock))
 	{
-		const FVector Origin = GetActorLocation() + Direction * GetCapsuleComponent()->GetScaledCapsuleRadius();
-
-		FActorSpawnParameters Params;
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-		const auto Rock = GetWorld()->SpawnActor<ARock>(RockClass, Origin, Direction.Rotation(), Params);
-		if (IsValid(Rock))
-		{
-			Rock->SetDirection(Direction);
-			Actors.Add(Rock);
-		}
+		Rock->SetDirection(Direction);
+		Actors.Add(Rock);
 	}
 
 	for (const auto& Actor : Actors)
 	{
 		Actor->SetActorTickEnabled(true);
 	}
-
-	OnAttackCompleteDelegate.Broadcast();
 }
 
-void AWindBossCharacter::WindBlastAndRockThrowAttack()
+void AWindBossCharacter::RingWaveAttackSequence()
 {
+	GetWorldTimerManager().SetTimer(AttackStartTimerHandle, this, &AWindBossCharacter::RingWaveAttack, 1.f, true, 0);
+	GetWorldTimerManager().SetTimer(AttackCompleteTimerHandle, this, &AWindBossCharacter::DispatchAttackComplete, 5.f);
+}
+
+void AWindBossCharacter::RockThrowAttackSequence()
+{
+	GetWorldTimerManager().SetTimer(AttackStartTimerHandle, this, &AWindBossCharacter::RockThrowAttack, .4f, true,
+	                                0);
+	GetWorldTimerManager().SetTimer(AttackCompleteTimerHandle, this, &AWindBossCharacter::DispatchAttackComplete, 3.f);
+}
+
+void AWindBossCharacter::DispatchAttackComplete()
+{
+	GetWorldTimerManager().ClearTimer(AttackStartTimerHandle);
 	OnAttackCompleteDelegate.Broadcast();
 }

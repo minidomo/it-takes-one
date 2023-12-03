@@ -3,11 +3,10 @@
 #include "WindBossController.h"
 
 #include "BehaviorTree/BlackboardComponent.h"
-#include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 
 AWindBossController::AWindBossController()
 {
-	ActionNameKey = "ActionName";
+	ActionKey = "Action";
 	ReadyKey = "Ready";
 }
 
@@ -23,45 +22,50 @@ void AWindBossController::OnAttackComplete()
 	Blackboard->SetValueAsBool(ReadyKey, true);
 }
 
-TArray<FName> AWindBossController::GetAttackOptions()
+EWindBossAttack AWindBossController::GetRandomAttack()
 {
-	TArray<FName> Options;
+	const auto BossCharacter = Cast<AWindBossCharacter>(GetCharacter());
+	const auto HealthPerecentage = BossCharacter->GetHealth() / BossCharacter->GetMaxHealth();
 
-	Options.Add("ring-wave");
-	Options.Add("rock-throw");
+	EWindBossAttack Ret;
+	const float V = FMath::FRand();
 
-	// const auto BossCharacter = Cast<AWindBossCharacter>(GetCharacter());
-	// const auto HealthPerecentage = BossCharacter->GetHealth() / BossCharacter->GetMaxHealth();
-	//
-	// if (HealthPerecentage < .5)
-	// {
-	// 	Options.Add("wind-blast-and-rock-throw");
-	// }
+	if (HealthPerecentage < .5)
+	{
+		if (V < .4)
+		{
+			Ret = EWindBossAttack::RingWave;
+		}
+		else
+		{
+			Ret = EWindBossAttack::RockThrow;
+		}
+	}
+	else
+	{
+		if (V < .25)
+		{
+			Ret = EWindBossAttack::RingWave;
+		}
+		else
+		{
+			Ret = EWindBossAttack::RockThrow;
+		}
+	}
 
-	return Options;
+	return Ret;
 }
 
-FName AWindBossController::GetRandomAttack()
-{
-	const auto Options = GetAttackOptions();
-	const int32 Index = FMath::RandHelper(Options.Num());
-	return Options[Index];
-}
-
-void AWindBossController::ExecuteAttack(FName AttackName)
+void AWindBossController::ExecuteAttack(EWindBossAttack Attack)
 {
 	const auto BossCharacter = Cast<AWindBossCharacter>(GetCharacter());
 
-	if (AttackName == "ring-wave")
+	if (Attack == EWindBossAttack::RingWave)
 	{
-		BossCharacter->RingWaveAttack();
+		BossCharacter->RingWaveAttackSequence();
 	}
-	else if (AttackName == "rock-throw")
+	else if (Attack == EWindBossAttack::RockThrow)
 	{
-		BossCharacter->RockThrowAttack();
-	}
-	else if (AttackName == "wind-blast-and-rock-throw")
-	{
-		BossCharacter->WindBlastAndRockThrowAttack();
+		BossCharacter->RockThrowAttackSequence();
 	}
 }

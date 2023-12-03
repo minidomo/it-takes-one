@@ -6,7 +6,7 @@ ASkyPlayerState::ASkyPlayerState()
 {
 	MaxHealth = 100.f;
 	Health = 100.f;
-	SecondsUntilHeal = 5.f;
+	SecondsUntilHeal = 7.f;
 }
 
 void ASkyPlayerState::ApplyDamage(float Damage)

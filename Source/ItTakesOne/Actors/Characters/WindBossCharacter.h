@@ -11,6 +11,16 @@
 class ARock;
 class ARingWave;
 
+UENUM(BlueprintType)
+enum class EWindBossAttack : uint8
+{
+	None UMETA(Hidden),
+	RingWave,
+	RockThrow,
+};
+
+ENUM_CLASS_FLAGS(EWindBossAttack);
+
 UCLASS()
 class ITTAKESONE_API AWindBossCharacter : public ABossCharacterBase
 {
@@ -18,6 +28,10 @@ class ITTAKESONE_API AWindBossCharacter : public ABossCharacterBase
 
 public:
 	AWindBossCharacter();
+
+private:
+	FTimerHandle AttackCompleteTimerHandle;
+	FTimerHandle AttackStartTimerHandle;
 
 protected:
 	UPROPERTY(EditAnywhere, SaveGame)
@@ -31,6 +45,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, SaveGame)
 	TSubclassOf<ARock> RockClass;
+
+	UPROPERTY(EditAnywhere, SaveGame)
+	uint32 ActorsPerRingWave;
 
 public:
 	UPROPERTY()
@@ -47,5 +64,10 @@ public:
 
 	void RingWaveAttack();
 	void RockThrowAttack();
-	void WindBlastAndRockThrowAttack();
+
+	void RingWaveAttackSequence();
+	void RockThrowAttackSequence();
+
+	UFUNCTION()
+	void DispatchAttackComplete();
 };

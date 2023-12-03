@@ -12,5 +12,7 @@ class ITTAKESONE_API UBTTask_ChooseAction : public UBTTaskNode
 	GENERATED_BODY()
 
 public:
+	UBTTask_ChooseAction();
+
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };
