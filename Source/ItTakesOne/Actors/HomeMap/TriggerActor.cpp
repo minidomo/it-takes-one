@@ -3,7 +3,7 @@
 
 #include "TriggerActor.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 ATriggerActor::ATriggerActor()
@@ -12,9 +12,9 @@ ATriggerActor::ATriggerActor()
 	PrimaryActorTick.bCanEverTick = true;
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	MeshComponent->SetupAttachment(RootComponent);
-	HitboxComponent = CreateDefaultSubobject<USphereComponent>(TEXT("Hitbox"));
-	HitboxComponent->SetupAttachment(MeshComponent);
+	RootComponent = MeshComponent;
+	HitboxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Hitbox"));
+	HitboxComponent->SetupAttachment(RootComponent);
 
 }
 
