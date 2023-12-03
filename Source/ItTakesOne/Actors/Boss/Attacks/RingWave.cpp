@@ -2,21 +2,71 @@
 
 #include "RingWave.h"
 
+#include "ItTakesOne/Actors/PlayerStates/SkyPlayerState.h"
+
+class ASkyPlayerState;
+
 ARingWave::ARingWave()
 {
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
 	Mesh->SetCollisionProfileName("OverlapAll");
+	Mesh->SetWorldScale3D(FVector(.2, 50, 1));
 
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+
+	Speed = 500.f;
+	PlayerDamage = 10.f;
+	MaxTimeAlive = 10.f;
 }
 
 void ARingWave::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Mesh->OnComponentBeginOverlap.AddDynamic(this, &ARingWave::OnBeginOverlap);
+	GetWorldTimerManager().SetTimer(DestroyTimeHandle, this, &ARingWave::CallDestroy, MaxTimeAlive);
 }
 
-void ARingWave::Tick(float DeltaSeconds)
+void ARingWave::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+                               const FHitResult& SweepResult)
 {
-	Super::Tick(DeltaSeconds);
+	if (const auto Controller = OtherActor->GetInstigatorController())
+	{
+		if (const auto PlayerState = Controller->GetPlayerState<ASkyPlayerState>())
+		{
+			PlayerState->ApplyDamage(PlayerDamage);
+		}
+	}
+}
+
+void ARingWave::CallDestroy()
+{
+	Destroy();
+}
+
+void ARingWave::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	const FVector Distance = Direction * Speed * DeltaTime;
+	const FVector NewPosition = GetActorLocation() + Distance;
+	SetActorLocation(NewPosition, true);
+}
+
+void ARingWave::SetDirection(const FVector& NewDirection)
+{
+	Direction = NewDirection;
+}
+
+void ARingWave::SetSpeed(float NewSpeed)
+{
+	Speed = NewSpeed;
+}
+
+void ARingWave::SetPlayerDamage(float NewPlayerDamage)
+{
+	PlayerDamage = NewPlayerDamage;
 }

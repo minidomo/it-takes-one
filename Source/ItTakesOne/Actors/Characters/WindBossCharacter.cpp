@@ -27,8 +27,41 @@ void AWindBossCharacter::ApplyDamage(float Damage)
 
 void AWindBossCharacter::RingWaveAttack()
 {
-	const auto Location = GetActorLocation();
-	GetWorld()->SpawnActor(RingWaveClass, &Location);
+	const auto PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
+	const auto PlayerHeight = PlayerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2;
+	const auto PlayerLocation = PlayerCharacter->GetActorLocation();
+	const FVector Direction = (PlayerLocation - GetActorLocation()).GetSafeNormal();
+
+	TArray<AActor*> Actors;
+	constexpr uint32 MaxActors = 5;
+	const float DeltaZ = PlayerHeight;
+
+	FVector Location = GetActorLocation();
+	Location.Z -= DeltaZ * MaxActors / 2;
+
+	for (uint32 Index = 0; Index < MaxActors; ++Index)
+	{
+		const FVector Origin = Location + Direction * GetCapsuleComponent()->GetScaledCapsuleRadius();
+
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		const auto RingWave = GetWorld()->SpawnActor<
+			ARingWave>(RingWaveClass, Origin, Direction.Rotation(), Params);
+		if (IsValid(RingWave))
+		{
+			RingWave->SetDirection(Direction);
+			Actors.Add(RingWave);
+		}
+
+		Location.Z += FMath::RandRange(DeltaZ + PlayerHeight / 2, DeltaZ + PlayerHeight * 2);
+	}
+
+	for (const auto& Actor : Actors)
+	{
+		Actor->SetActorTickEnabled(true);
+	}
+
 	OnAttackCompleteDelegate.Broadcast();
 }
 
@@ -54,7 +87,6 @@ void AWindBossCharacter::RockThrowAttack()
 			Actors.Add(Rock);
 		}
 	}
-
 
 	for (const auto& Actor : Actors)
 	{

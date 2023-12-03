@@ -27,16 +27,16 @@ TArray<FName> AWindBossController::GetAttackOptions()
 {
 	TArray<FName> Options;
 
-	// Options.Add("ring-wave");
+	Options.Add("ring-wave");
 	Options.Add("rock-throw");
 
-	const auto BossCharacter = Cast<AWindBossCharacter>(GetCharacter());
-	const auto HealthPerecentage = BossCharacter->GetHealth() / BossCharacter->GetMaxHealth();
-
-	if (HealthPerecentage < .5)
-	{
-		Options.Add("wind-blast-and-rock-throw");
-	}
+	// const auto BossCharacter = Cast<AWindBossCharacter>(GetCharacter());
+	// const auto HealthPerecentage = BossCharacter->GetHealth() / BossCharacter->GetMaxHealth();
+	//
+	// if (HealthPerecentage < .5)
+	// {
+	// 	Options.Add("wind-blast-and-rock-throw");
+	// }
 
 	return Options;
 }
