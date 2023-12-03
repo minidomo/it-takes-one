@@ -24,11 +24,18 @@ void AWindBossCharacter::ApplyDamage(float Damage)
 	const float OldHealth = Health;
 	Health = FMath::Clamp(Health - Damage, 0, MaxHealth);
 	OnHealthUpdateDelegate.Broadcast(OldHealth, Health);
+
+	if (FMath::IsNearlyZero(Health))
+	{
+		Destroy();
+	}
 }
 
 void AWindBossCharacter::RingWaveAttack()
 {
 	const auto PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
+	if (!PlayerCharacter) { return; }
+
 	const auto PlayerHeight = PlayerCharacter->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2;
 	const auto PlayerLocation = PlayerCharacter->GetActorLocation();
 	const FVector Direction = (PlayerLocation - GetActorLocation()).GetSafeNormal();
@@ -65,7 +72,10 @@ void AWindBossCharacter::RingWaveAttack()
 
 void AWindBossCharacter::RockThrowAttack()
 {
-	const auto PlayerLocation = GetWorld()->GetFirstPlayerController()->GetCharacter()->GetActorLocation();
+	const auto PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
+	if (!PlayerCharacter) { return; }
+
+	const auto PlayerLocation = PlayerCharacter->GetActorLocation();
 	const FVector Direction = (PlayerLocation - GetActorLocation()).GetSafeNormal();
 
 	TArray<AActor*> Actors;

@@ -4,6 +4,7 @@
 
 #include "NavigationSystem.h"
 #include "GameFramework/PlayerState.h"
+#include "ItTakesOne/Actors/LevelTransitionActor.h"
 #include "ItTakesOne/Actors/Boss/CoreCrystal.h"
 #include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 #include "ItTakesOne/Actors/PlayerStates/SkyPlayerState.h"
@@ -41,18 +42,12 @@ void ASkyLandGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerState = Cast<ASkyPlayerState>(UGameplayStatics::GetActorOfClass(this, ASkyPlayerState::StaticClass()));
 	BossCharacter = Cast<
 		AWindBossCharacter>(UGameplayStatics::GetActorOfClass(this, AWindBossCharacter::StaticClass()));
 
-	if (PlayerState)
-	{
-		PlayerState->OnHealthUpdateDelegate.AddDynamic(this, &ASkyLandGameMode::OnPlayerHealthUpdate);
-	}
-
 	if (BossCharacter)
 	{
-		BossCharacter->OnHealthUpdateDelegate.AddDynamic(this, &ASkyLandGameMode::OnBossHealthUpdate);
+		BossCharacter->OnDestroyed.AddDynamic(this, &ASkyLandGameMode::OnBossDestroyed);
 	}
 
 	OnCoreCrystalDestroyedDelegate.AddDynamic(this, &ASkyLandGameMode::OnCoreCrystalDestroyed);
@@ -60,14 +55,32 @@ void ASkyLandGameMode::BeginPlay()
 	SpawnCoreCrystal();
 }
 
-void ASkyLandGameMode::OnPlayerHealthUpdate(float OldHealth, float NewHealth)
+void ASkyLandGameMode::OnPlayerDied(ACharacter* Character, AController* Controller)
 {
-	UE_LOG(LogTemp, Display, TEXT("%s: player hp %f -> %f"), *GetActorNameOrLabel(), OldHealth, NewHealth);
 }
 
-void ASkyLandGameMode::OnBossHealthUpdate(float OldHealth, float NewHealth)
+void ASkyLandGameMode::OnBossDestroyed(AActor* DestroyedActor)
 {
-	UE_LOG(LogTemp, Display, TEXT("%s: boss hp %f -> %f"), *GetActorNameOrLabel(), OldHealth, NewHealth);
+	// save progress when boss is dead
+	if (const auto SaveData = GetPlayableWorldSaveData())
+	{
+		SaveData->bPlaythroughComplete = true;
+	}
+	WriteSaveGame();
+
+	// spawn transition actor
+	FVector Location = BossCharacter->GetActorLocation();
+
+	// offset Z upwards so adjusting puts the actor on top of the terrain
+	Location.Z += 10;
+
+	FActorSpawnParameters Params;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	const auto Actor = GetWorld()->SpawnActor<ALevelTransitionActor>(LevelTransitionActorClass, Location,
+	                                                                 FRotator::ZeroRotator,
+	                                                                 Params);
+	Actor->LevelToLoad = "MainMenu";
 }
 
 void ASkyLandGameMode::OnCoreCrystalDestroyed()
@@ -77,6 +90,8 @@ void ASkyLandGameMode::OnCoreCrystalDestroyed()
 
 void ASkyLandGameMode::SpawnCoreCrystal()
 {
+	if (!IsValid(BossCharacter)) { return; }
+
 	FVector Location;
 
 	if (BossCharacter)

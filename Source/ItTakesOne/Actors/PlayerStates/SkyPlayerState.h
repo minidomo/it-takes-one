@@ -33,6 +33,7 @@ public:
 	FOnHealthUpdateDelegate OnHealthUpdateDelegate;
 
 public:
+	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 
 	void ApplyDamage(float Damage);

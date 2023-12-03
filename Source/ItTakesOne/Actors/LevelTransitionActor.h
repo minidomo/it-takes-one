@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "LevelTransitionActor.generated.h"
 
 UCLASS()
-class ITTAKESONE_API ALevelTransitionActor : public AActor
+class ITTAKESONE_API ALevelTransitionActor : public AActor, public ISavableActorInterface
 {
 	GENERATED_BODY()
 
@@ -24,18 +25,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere)
-		class UBoxComponent* BoxCollisionComponent;
+	class UBoxComponent* BoxCollisionComponent;
 
 	UPROPERTY(VisibleAnywhere)
-		class UStaticMeshComponent* VisualComponent;
+	class UStaticMeshComponent* VisualComponent;
 
-	UPROPERTY(EditAnywhere, Category = "Level")
-		FName LevelToLoad;
+	UPROPERTY(EditAnywhere, Category = "Level", SaveGame)
+	FName LevelToLoad;
 
 private:
 	UFUNCTION()
-		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                    int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };
-
-

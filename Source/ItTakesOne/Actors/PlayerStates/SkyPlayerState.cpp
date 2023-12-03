@@ -15,7 +15,15 @@ void ASkyPlayerState::ApplyDamage(float Damage)
 	Health = FMath::Clamp(Health - Damage, 0, MaxHealth);
 	OnHealthUpdateDelegate.Broadcast(OldHealth, Health);
 
-	GetWorldTimerManager().SetTimer(UntilHealTimerHandle, this, &ASkyPlayerState::StartHeal, SecondsUntilHeal);
+	if (Health > 0)
+	{
+		// only heal if player is actually alive
+		GetWorldTimerManager().SetTimer(UntilHealTimerHandle, this, &ASkyPlayerState::StartHeal, SecondsUntilHeal);
+	}
+	else
+	{
+		GetWorldTimerManager().ClearTimer(UntilHealTimerHandle);
+	}
 }
 
 void ASkyPlayerState::StartHeal()

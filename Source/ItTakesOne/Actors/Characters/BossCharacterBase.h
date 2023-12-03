@@ -32,4 +32,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+public:
+	FORCEINLINE FString GetBossName() const { return BossName; }
 };

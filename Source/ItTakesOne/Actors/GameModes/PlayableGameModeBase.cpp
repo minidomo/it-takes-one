@@ -148,6 +148,9 @@ void APlayableGameModeBase::LoadSaveGame()
 				// having no data means this actor was destroyed at runtime, so destroy it
 				Actor->Destroy();
 			}
+
+			UE_LOG(LogTemp, Display, TEXT("%s: %s | %d"), *GetActorNameOrLabel(), *Actor->GetActorNameOrLabel(),
+			       !!Data);
 		}
 	}
 

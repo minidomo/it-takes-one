@@ -6,6 +6,7 @@
 #include "PlayableGameModeBase.h"
 #include "SkyLandGameMode.generated.h"
 
+class ALevelTransitionActor;
 class ACoreCrystal;
 class AWindBossCharacter;
 class ASkyPlayerState;
@@ -22,13 +23,13 @@ public:
 
 protected:
 	UPROPERTY()
-	ASkyPlayerState* PlayerState;
-
-	UPROPERTY()
 	AWindBossCharacter* BossCharacter;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ACoreCrystal> CoreCrystalClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ALevelTransitionActor> LevelTransitionActorClass;
 
 public:
 	UPROPERTY()
@@ -36,12 +37,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnPlayerDied(ACharacter* Character, AController* Controller) override;
 
 	UFUNCTION()
-	void OnPlayerHealthUpdate(float OldHealth, float NewHealth);
-
-	UFUNCTION()
-	void OnBossHealthUpdate(float OldHealth, float NewHealth);
+	void OnBossDestroyed(AActor* DestroyedActor);
 
 	UFUNCTION()
 	void OnCoreCrystalDestroyed();
