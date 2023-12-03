@@ -29,12 +29,18 @@ void ABossControllerBase::StartAI()
 	}
 }
 
+void ABossControllerBase::OnAttackComplete()
+{
+}
+
 void ABossControllerBase::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
 	if (const auto AICharacter = Cast<ABossCharacterBase>(InPawn))
 	{
+		AICharacter->OnAttackCompleteDelegate.AddDynamic(this, &ABossControllerBase::OnAttackComplete);
+
 		if (const auto Tree = AICharacter->BehaviorTree)
 		{
 			if (Tree->BlackboardAsset)

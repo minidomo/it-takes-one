@@ -2,12 +2,25 @@
 
 #include "WindBossController.h"
 
+#include "BehaviorTree/BlackboardComponent.h"
 #include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 
 AWindBossController::AWindBossController()
 {
 	ActionNameKey = "ActionName";
 	ReadyKey = "Ready";
+}
+
+void AWindBossController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	Blackboard->SetValueAsBool(ReadyKey, true);
+}
+
+void AWindBossController::OnAttackComplete()
+{
+	Super::OnAttackComplete();
+	Blackboard->SetValueAsBool(ReadyKey, true);
 }
 
 TArray<FName> AWindBossController::GetAttackOptions()

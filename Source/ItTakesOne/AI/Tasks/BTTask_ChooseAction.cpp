@@ -11,8 +11,12 @@ EBTNodeResult::Type UBTTask_ChooseAction::ExecuteTask(UBehaviorTreeComponent& Ow
 	if (const auto Controller = Cast<AWindBossController>(OwnerComp.GetAIOwner()))
 	{
 		const auto Blackboard = Controller->GetBlackboardComponent();
-		Blackboard->SetValueAsName(Controller->ActionNameKey, Controller->GetRandomAttack());
-		return EBTNodeResult::Succeeded;
+
+		if (Blackboard->GetValueAsBool(Controller->ReadyKey))
+		{
+			Blackboard->SetValueAsName(Controller->ActionNameKey, Controller->GetRandomAttack());
+			return EBTNodeResult::Succeeded;
+		}
 	}
 
 	return EBTNodeResult::Failed;

@@ -31,6 +31,9 @@ protected:
 	UFUNCTION()
 	void StartAI();
 
+	UFUNCTION()
+	virtual void OnAttackComplete();
+
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 };

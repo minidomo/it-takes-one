@@ -7,6 +7,8 @@
 #include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "BossCharacterBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackCompleteDelegate);
+
 class UBehaviorTree;
 
 UCLASS()
@@ -22,6 +24,9 @@ protected:
 	FString BossName;
 
 public:
+	UPROPERTY()
+	FOnAttackCompleteDelegate OnAttackCompleteDelegate;
+
 	UPROPERTY(EditAnywhere, Category = AI)
 	UBehaviorTree* BehaviorTree;
 

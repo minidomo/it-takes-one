@@ -11,7 +11,7 @@ public class ItTakesOne : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "AIModule",
-			"GameplayTasks"
+			"GameplayTasks", "NavigationSystem"
 		});
 	}
 }

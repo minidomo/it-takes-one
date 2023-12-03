@@ -18,10 +18,18 @@ void AWindBossCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+void AWindBossCharacter::ApplyDamage(float Damage)
+{
+	const float OldHealth = Health;
+	Health = FMath::Clamp(Health - Damage, 0, MaxHealth);
+	OnHealthUpdateDelegate.Broadcast(OldHealth, Health);
+}
+
 void AWindBossCharacter::RingWaveAttack()
 {
 	const auto Location = GetActorLocation();
 	GetWorld()->SpawnActor(RingWaveClass, &Location);
+	OnAttackCompleteDelegate.Broadcast();
 }
 
 void AWindBossCharacter::RockThrowAttack()
@@ -47,8 +55,11 @@ void AWindBossCharacter::RockThrowAttack()
 	{
 		Actor->SetActorTickEnabled(true);
 	}
+
+	OnAttackCompleteDelegate.Broadcast();
 }
 
 void AWindBossCharacter::WindBlastAndRockThrowAttack()
 {
+	OnAttackCompleteDelegate.Broadcast();
 }

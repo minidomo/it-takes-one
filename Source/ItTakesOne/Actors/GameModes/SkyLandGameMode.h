@@ -6,6 +6,9 @@
 #include "PlayableGameModeBase.h"
 #include "SkyLandGameMode.generated.h"
 
+class AWindBossCharacter;
+class ASkyPlayerState;
+
 UCLASS()
 class ITTAKESONE_API ASkyLandGameMode : public APlayableGameModeBase
 {
@@ -14,5 +17,22 @@ class ITTAKESONE_API ASkyLandGameMode : public APlayableGameModeBase
 public:
 	ASkyLandGameMode();
 
+protected:
+	UPROPERTY()
+	ASkyPlayerState* PlayerState;
+
+	UPROPERTY()
+	AWindBossCharacter* BossCharacter;
+
+protected:
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnPlayerHealthUpdate(float OldHealth, float NewHealth);
+
+	UFUNCTION()
+	void OnBossHealthUpdate(float OldHealth, float NewHealth);
+
+public:
 	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData() override;
 };

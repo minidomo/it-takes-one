@@ -21,7 +21,12 @@ public:
 	UPROPERTY(EditAnywhere, SaveGame)
 	FName ReadyKey;
 
+protected:
+	virtual void OnPossess(APawn* InPawn) override;
+
 public:
+	virtual void OnAttackComplete() override;
+
 	TArray<FName> GetAttackOptions();
 	FName GetRandomAttack();
 	void ExecuteAttack(FName AttackName);
