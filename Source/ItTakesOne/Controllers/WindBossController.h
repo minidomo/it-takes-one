@@ -13,4 +13,16 @@ class ITTAKESONE_API AWindBossController : public ABossControllerBase
 
 public:
 	AWindBossController();
+
+public:
+	UPROPERTY(EditAnywhere, SaveGame)
+	FName ActionNameKey;
+
+	UPROPERTY(EditAnywhere, SaveGame)
+	FName ReadyKey;
+
+public:
+	TArray<FName> GetAttackOptions();
+	FName GetRandomAttack();
+	void ExecuteAttack(FName AttackName);
 };

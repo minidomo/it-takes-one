@@ -4,6 +4,7 @@
 
 ABossCharacterBase::ABossCharacterBase()
 {
+	BossName = "Default Boss Name";
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 

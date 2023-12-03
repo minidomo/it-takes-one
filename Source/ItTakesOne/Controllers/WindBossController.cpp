@@ -2,6 +2,53 @@
 
 #include "WindBossController.h"
 
+#include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
+
 AWindBossController::AWindBossController()
 {
+	ActionNameKey = "ActionName";
+	ReadyKey = "Ready";
+}
+
+TArray<FName> AWindBossController::GetAttackOptions()
+{
+	TArray<FName> Options;
+
+	// Options.Add("ring-wave");
+	Options.Add("rock-throw");
+
+	const auto BossCharacter = Cast<AWindBossCharacter>(GetCharacter());
+	const auto HealthPerecentage = BossCharacter->GetHealth() / BossCharacter->GetMaxHealth();
+
+	if (HealthPerecentage < .5)
+	{
+		Options.Add("wind-blast-and-rock-throw");
+	}
+
+	return Options;
+}
+
+FName AWindBossController::GetRandomAttack()
+{
+	const auto Options = GetAttackOptions();
+	const int32 Index = FMath::RandHelper(Options.Num());
+	return Options[Index];
+}
+
+void AWindBossController::ExecuteAttack(FName AttackName)
+{
+	const auto BossCharacter = Cast<AWindBossCharacter>(GetCharacter());
+
+	if (AttackName == "ring-wave")
+	{
+		BossCharacter->RingWaveAttack();
+	}
+	else if (AttackName == "rock-throw")
+	{
+		BossCharacter->RockThrowAttack();
+	}
+	else if (AttackName == "wind-blast-and-rock-throw")
+	{
+		BossCharacter->WindBlastAndRockThrowAttack();
+	}
 }

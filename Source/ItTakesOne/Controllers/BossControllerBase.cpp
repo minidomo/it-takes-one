@@ -11,6 +11,22 @@ ABossControllerBase::ABossControllerBase()
 {
 	BehaviorTree = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTree"));
 	CreateDefaultSubobject<UBlackboardComponent>(TEXT("Blackboard"));
+
+	StartAIDelay = 3.f;
+}
+
+void ABossControllerBase::StartAI()
+{
+	if (const auto AICharacter = Cast<ABossCharacterBase>(GetPawn()))
+	{
+		if (const auto Tree = AICharacter->BehaviorTree)
+		{
+			if (Tree->BlackboardAsset)
+			{
+				BehaviorTree->StartTree(*Tree);
+			}
+		}
+	}
 }
 
 void ABossControllerBase::OnPossess(APawn* InPawn)
@@ -24,7 +40,7 @@ void ABossControllerBase::OnPossess(APawn* InPawn)
 			if (Tree->BlackboardAsset)
 			{
 				Blackboard->InitializeBlackboard(*Tree->BlackboardAsset);
-				BehaviorTree->StartTree(*Tree);
+				GetWorldTimerManager().SetTimer(StartAITimerHandle, this, &ABossControllerBase::StartAI, StartAIDelay);
 			}
 		}
 	}
