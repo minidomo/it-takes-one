@@ -17,16 +17,16 @@ public:
 	// Sets default values for this actor's properties
 	ATriggerActor();
 
-	FORCEINLINE class USphereComponent* GetHitBoxComponent() const { return HitboxComponent; }
+	FORCEINLINE class UBoxComponent* GetHitBoxComponent() const { return HitboxComponent; }
 	FORCEINLINE class UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "World Pawn")
-	class USphereComponent* HitboxComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "World Pawn")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Trigger")
+	class UBoxComponent* HitboxComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Trigger")
 	class UStaticMeshComponent* MeshComponent;
 
 public:	
