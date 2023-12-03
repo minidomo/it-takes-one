@@ -41,7 +41,7 @@ void AResponseActor::ResponseToTrigger() {
     {
         if (TriggerActor)
         {
-			SetActorLocation(GetActorLocation() - GetActorUpVector() * 5.f);
+			SetActorLocation(GetActorLocation() - GetActorUpVector() * 15.f);
 		}
 	}
 }
