@@ -15,7 +15,10 @@ AHomeGameMode::AHomeGameMode()
 
 FPlayableWorldSaveData* AHomeGameMode::GetPlayableWorldSaveData()
 {
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	const auto ContentData = GameInstance->GetContentData();
-	return &ContentData->Home;
+	if (const auto GameInstance = GetGameInstance<UMainGameInstance>())
+	{
+		const auto ContentData = GameInstance->GetContentData();
+		return &ContentData->Home;
+	}
+	return nullptr;
 }

@@ -25,7 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	void OnPlayerDied(ACharacter* Character, AController* Controller);
+	virtual void OnPlayerDied(ACharacter* Character, AController* Controller);
 
 public:
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;

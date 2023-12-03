@@ -16,7 +16,10 @@ AClockLandGameMode::AClockLandGameMode()
 
 FPlayableWorldSaveData* AClockLandGameMode::GetPlayableWorldSaveData()
 {
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	const auto ContentData = GameInstance->GetContentData();
-	return &ContentData->ClockLand;
+	if (const auto GameInstance = GetGameInstance<UMainGameInstance>())
+	{
+		const auto ContentData = GameInstance->GetContentData();
+		return &ContentData->ClockLand;
+	}
+	return nullptr;
 }

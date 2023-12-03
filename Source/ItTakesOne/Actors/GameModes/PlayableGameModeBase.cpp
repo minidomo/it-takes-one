@@ -148,6 +148,9 @@ void APlayableGameModeBase::LoadSaveGame()
 				// having no data means this actor was destroyed at runtime, so destroy it
 				Actor->Destroy();
 			}
+
+			UE_LOG(LogTemp, Display, TEXT("%s: %s | %d"), *GetActorNameOrLabel(), *Actor->GetActorNameOrLabel(),
+			       !!Data);
 		}
 	}
 
@@ -174,6 +177,8 @@ void APlayableGameModeBase::LoadSaveGame()
 				UE_LOG(LogTemp, Warning, TEXT("%s: actor failed to load: %s"), *GetActorNameOrLabel(),
 				       *Data.Name.ToString());
 			}
+
+			UE_LOG(LogTemp, Display, TEXT("%s: spawn %s | %d"), *GetActorNameOrLabel(), *Data.Name.ToString(), !!Actor);
 		}
 	}
 }
@@ -221,9 +226,12 @@ void APlayableGameModeBase::WriteSaveGame()
 
 FPlayableWorldSaveData* APlayableGameModeBase::GetPlayableWorldSaveData()
 {
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	const auto ContentData = GameInstance->GetContentData();
-	return &ContentData->TestWorld;
+	if (const auto GameInstance = GetGameInstance<UMainGameInstance>())
+	{
+		const auto ContentData = GameInstance->GetContentData();
+		return &ContentData->TestWorld;
+	}
+	return nullptr;
 }
 
 void APlayableGameModeBase::LoadPlayerState(APlayerState* PlayerState)
