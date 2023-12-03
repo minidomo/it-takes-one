@@ -2,7 +2,6 @@
 
 #include "PlayerHudUI.h"
 
-#include "HealthBarUI.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
@@ -12,13 +11,13 @@
 void UPlayerHudUI::OnPlayerHealthUpdate(float OldHealth, float NewHealth)
 {
 	const float Percent = NewHealth / SkyPlayerState->GetMaxHealth();;
-	PlayerHealthBar->GetProgressBar()->SetPercent(Percent);
+	PlayerHealthBar->SetPercent(Percent);
 }
 
 void UPlayerHudUI::OnBossHealthUpdate(float OldHealth, float NewHealth)
 {
 	const float Percent = NewHealth / WindBossCharacter->GetMaxHealth();;
-	BossHealthBar->GetProgressBar()->SetPercent(Percent);
+	BossHealthBar->SetPercent(Percent);
 
 	if (FMath::IsNearlyZero(NewHealth))
 	{
@@ -43,7 +42,7 @@ void UPlayerHudUI::NativeConstruct()
 	if (SkyPlayerState)
 	{
 		const float HealthPercent = SkyPlayerState->GetHealth() / SkyPlayerState->GetMaxHealth();
-		PlayerHealthBar->GetProgressBar()->SetPercent(HealthPercent);
+		PlayerHealthBar->SetPercent(HealthPercent);
 
 		SkyPlayerState->OnHealthUpdateDelegate.AddDynamic(this, &UPlayerHudUI::OnPlayerHealthUpdate);
 	}
@@ -57,7 +56,7 @@ void UPlayerHudUI::NativeConstruct()
 		BossName->SetText(FText::FromString(WindBossCharacter->GetBossName()));
 
 		const float HealthPercent = WindBossCharacter->GetHealth() / WindBossCharacter->GetMaxHealth();
-		BossHealthBar->GetProgressBar()->SetPercent(HealthPercent);
+		BossHealthBar->SetPercent(HealthPercent);
 
 		WindBossCharacter->OnHealthUpdateDelegate.AddDynamic(this, &UPlayerHudUI::OnBossHealthUpdate);
 	}

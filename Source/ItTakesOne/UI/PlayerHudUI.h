@@ -6,10 +6,10 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerHudUI.generated.h"
 
+class UProgressBar;
 class AWindBossCharacter;
 class ASkyPlayerState;
 class UTextBlock;
-class UHealthBarUI;
 
 UCLASS()
 class ITTAKESONE_API UPlayerHudUI : public UUserWidget
@@ -18,10 +18,10 @@ class ITTAKESONE_API UPlayerHudUI : public UUserWidget
 
 protected:
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
-	UHealthBarUI* PlayerHealthBar;
+	UProgressBar* PlayerHealthBar;
 
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
-	UHealthBarUI* BossHealthBar;
+	UProgressBar* BossHealthBar;
 
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
 	UTextBlock* BossName;
@@ -34,7 +34,7 @@ protected:
 
 	UFUNCTION()
 	void OnPlayerHealthUpdate(float OldHealth, float NewHealth);
-	
+
 	UFUNCTION()
 	void OnBossHealthUpdate(float OldHealth, float NewHealth);
 
