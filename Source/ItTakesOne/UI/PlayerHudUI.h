@@ -38,6 +38,8 @@ protected:
 	UFUNCTION()
 	void OnBossHealthUpdate(float OldHealth, float NewHealth);
 
+	void HideBossGui();
+
 protected:
 	virtual void NativeConstruct() override;
 };

@@ -27,6 +27,16 @@ void ARock::BeginPlay()
 
 	Mesh->OnComponentBeginOverlap.AddDynamic(this, &ARock::OnBeginOverlap);
 	Mesh->OnComponentHit.AddDynamic(this, &ARock::OnHit);
+
+	if (const auto Boss = Cast<AWindBossCharacter>(
+		UGameplayStatics::GetActorOfClass(this, AWindBossCharacter::StaticClass())))
+	{
+		Boss->OnDestroyed.AddDynamic(this, &ARock::OnBossDestroyed);
+	}
+	else
+	{
+		Destroy();
+	}
 }
 
 void ARock::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -55,6 +65,11 @@ void ARock::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimit
 		OtherActor->Destroy();
 	}
 
+	Destroy();
+}
+
+void ARock::OnBossDestroyed(AActor* DestroyedActor)
+{
 	Destroy();
 }
 

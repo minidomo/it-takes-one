@@ -61,12 +61,10 @@ void ASkyLandGameMode::OnPlayerDied(ACharacter* Character, AController* Controll
 
 void ASkyLandGameMode::OnBossDestroyed(AActor* DestroyedActor)
 {
-	// save progress when boss is dead
 	if (const auto SaveData = GetPlayableWorldSaveData())
 	{
 		SaveData->bPlaythroughComplete = true;
 	}
-	WriteSaveGame();
 
 	// spawn transition actor
 	FVector Location = BossCharacter->GetActorLocation();
@@ -81,6 +79,9 @@ void ASkyLandGameMode::OnBossDestroyed(AActor* DestroyedActor)
 	                                                                 FRotator::ZeroRotator,
 	                                                                 Params);
 	Actor->LevelToLoad = "MainMenu";
+
+	// save after two seconds to allow for other processes to take place
+	GetWorldTimerManager().SetTimer(SaveAfterBossDeathTimerHandle, this, &ASkyLandGameMode::WriteSaveGame, 2.f);
 }
 
 void ASkyLandGameMode::OnCoreCrystalDestroyed()

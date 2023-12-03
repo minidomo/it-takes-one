@@ -177,6 +177,8 @@ void APlayableGameModeBase::LoadSaveGame()
 				UE_LOG(LogTemp, Warning, TEXT("%s: actor failed to load: %s"), *GetActorNameOrLabel(),
 				       *Data.Name.ToString());
 			}
+
+			UE_LOG(LogTemp, Display, TEXT("%s: spawn %s | %d"), *GetActorNameOrLabel(), *Data.Name.ToString(), !!Actor);
 		}
 	}
 }

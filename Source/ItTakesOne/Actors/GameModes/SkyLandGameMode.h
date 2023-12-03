@@ -21,6 +21,9 @@ class ITTAKESONE_API ASkyLandGameMode : public APlayableGameModeBase
 public:
 	ASkyLandGameMode();
 
+private:
+	FTimerHandle SaveAfterBossDeathTimerHandle;
+
 protected:
 	UPROPERTY()
 	AWindBossCharacter* BossCharacter;

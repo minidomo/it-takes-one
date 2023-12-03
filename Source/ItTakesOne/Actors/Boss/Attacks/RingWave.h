@@ -44,6 +44,9 @@ protected:
 	UFUNCTION()
 	void CallDestroy();
 
+	UFUNCTION()
+	void OnBossDestroyed(AActor* DestroyedActor);
+
 public:
 	virtual void Tick(float DeltaSeconds) override;
 

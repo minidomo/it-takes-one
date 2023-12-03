@@ -22,9 +22,14 @@ void UPlayerHudUI::OnBossHealthUpdate(float OldHealth, float NewHealth)
 
 	if (FMath::IsNearlyZero(NewHealth))
 	{
-		BossName->SetVisibility(ESlateVisibility::Hidden);
-		BossHealthBar->SetVisibility(ESlateVisibility::Hidden);
+		HideBossGui();
 	}
+}
+
+void UPlayerHudUI::HideBossGui()
+{
+	BossName->SetVisibility(ESlateVisibility::Hidden);
+	BossHealthBar->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UPlayerHudUI::NativeConstruct()
@@ -59,5 +64,6 @@ void UPlayerHudUI::NativeConstruct()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s: could not find boss character"), *GetName());
+		HideBossGui();
 	}
 }

@@ -2,7 +2,9 @@
 
 #include "RingWave.h"
 
+#include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 #include "ItTakesOne/Actors/PlayerStates/SkyPlayerState.h"
+#include "Kismet/GameplayStatics.h"
 
 class ASkyPlayerState;
 
@@ -27,6 +29,16 @@ void ARingWave::BeginPlay()
 
 	Mesh->OnComponentBeginOverlap.AddDynamic(this, &ARingWave::OnBeginOverlap);
 	GetWorldTimerManager().SetTimer(DestroyTimeHandle, this, &ARingWave::CallDestroy, MaxTimeAlive);
+
+	if (const auto Boss = Cast<AWindBossCharacter>(
+		UGameplayStatics::GetActorOfClass(this, AWindBossCharacter::StaticClass())))
+	{
+		Boss->OnDestroyed.AddDynamic(this, &ARingWave::OnBossDestroyed);
+	}
+	else
+	{
+		Destroy();
+	}
 }
 
 void ARingWave::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -43,6 +55,11 @@ void ARingWave::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 }
 
 void ARingWave::CallDestroy()
+{
+	Destroy();
+}
+
+void ARingWave::OnBossDestroyed(AActor* DestroyedActor)
 {
 	Destroy();
 }
