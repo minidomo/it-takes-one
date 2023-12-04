@@ -54,6 +54,12 @@ public:
 	void StartPositionRecording();
 
 	void HammerEvent();
+	UFUNCTION(BlueprintImplementableEvent)
+	void AttachEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DetachEvent();
+
 	void ResetAction();
 
 	void ClockEvent();
@@ -87,6 +93,8 @@ private:
 	void UpdatePositionHistory();
 
 	FTimerHandle HammerTimerHandle;
+
+	bool IsHammer = false;
 
 
 protected:

@@ -115,6 +115,8 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 void AItTakesOneCharacter::HammerEvent()
 {
 	if (CanPerformAction(ECharacterActionStateEnum::HAMMER)) {
+		IsHammer = true;
+		AttachEvent();
 		UpdateActionState(ECharacterActionStateEnum::HAMMER);
 		if (Controller != nullptr)
 		{
@@ -149,16 +151,18 @@ void AItTakesOneCharacter::HammerEvent()
 				}
 			}
 		}
-		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 2.f, false);
+		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 2.5f, false);
 	}
 }
 
 void AItTakesOneCharacter::ResetAction() {
-	if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("reset action"));
-		}
+
 	UpdateActionState(ECharacterActionStateEnum::IDLE);
+
+	if (IsHammer) {
+		DetachEvent();
+		IsHammer = false;
+	} 
 }
 
 void AItTakesOneCharacter::StartPositionRecording() {
@@ -255,11 +259,4 @@ void AItTakesOneCharacter::UpdateActionState(ECharacterActionStateEnum NewAction
 	}
 	
 	CharacterActionState = NewAction;
-	if (GEngine)
-		{
-			FString ActionStateString = UEnum::GetValueAsString(CharacterActionState);
-			FString ActionStateString2 = UEnum::GetValueAsString(NewAction);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("New Action: ") + ActionStateString2);
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Character Action State: ") + ActionStateString);
-		}
 }
