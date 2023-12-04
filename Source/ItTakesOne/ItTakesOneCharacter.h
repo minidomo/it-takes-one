@@ -93,6 +93,7 @@ private:
 	void UpdatePositionHistory();
 
 	FTimerHandle HammerTimerHandle;
+	FTimerHandle DestroyTimerHandle;
 
 	bool IsHammer = false;
 

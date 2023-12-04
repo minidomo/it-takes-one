@@ -140,18 +140,23 @@ void AItTakesOneCharacter::HammerEvent()
 					ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
 					if (BreakableActor != nullptr)
 					{
-						BreakableActor->Destroy();
+						GetWorldTimerManager().SetTimer(DestroyTimerHandle, [BreakableActor]() {
+                            BreakableActor->Destroy();
+                        }, 1.3f, false);
 					}
 				}
 
 				if (Actor->IsA(ATriggerActor::StaticClass())) {
-					ATriggerActor* tactor = Cast<ATriggerActor>(Actor);
-					tactor->OnTriggerDelegate.Broadcast();
-					tactor->Destroy();
+					ATriggerActor* TActor = Cast<ATriggerActor>(Actor);
+
+					TActor->OnTriggerDelegate.Broadcast();
+					GetWorldTimerManager().SetTimer(DestroyTimerHandle, [TActor]() {
+                            TActor->Destroy();
+                        }, 1.3f, false);
 				}
 			}
 		}
-		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 2.5f, false);
+		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 3.3f, false);
 	}
 }
 
