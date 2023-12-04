@@ -74,24 +74,30 @@ void AItTakesOneCharacter::Destroyed()
 
 void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 {
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
+	if (CanPerformAction(ECharacterActionStateEnum::MOVE))
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		// input is a Vector2D
+		FVector2D MovementVector = Value.Get<FVector2D>();
 
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		if (Controller != nullptr)
+		{
+			// find out which way is forward
+			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get right vector
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+			// get forward vector
+			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		// add movement
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+			// get right vector
+			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+			// add movement
+			AddMovementInput(ForwardDirection, MovementVector.Y);
+			AddMovementInput(RightDirection, MovementVector.X);
+
+			UpdateActionState(ECharacterActionStateEnum::MOVE);
+			GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 0.01f, false);
+		}
 	}
 }
 
@@ -110,47 +116,71 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 
 void AItTakesOneCharacter::HammerEvent()
 {
-	if (Controller != nullptr)
+	if (CanPerformAction(ECharacterActionStateEnum::HAMMER))
 	{
-		if (GEngine)
+		IsHammer = true;
+		AttachEvent();
+		UpdateActionState(ECharacterActionStateEnum::HAMMER);
+		if (Controller != nullptr)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Hammer"));
-		}
-
-		// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
-		// Array to hold all overlapping actors
-		TArray<AActor*> OverlappingActors;
-
-		// Get all actors that the character is currently overlapping
-		GetOverlappingActors(OverlappingActors);
-
-		// Loop through each actor
-		for (AActor* Actor : OverlappingActors)
-		{
-			if (Actor->IsA(ABreakableActor::StaticClass()))
+			if (GEngine)
 			{
-				// Check if the actor is of the BreakableActor class
-				ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
-				if (BreakableActor != nullptr)
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Hammer"));
+			}
+
+			// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
+			// Array to hold all overlapping actors
+			TArray<AActor*> OverlappingActors;
+
+			// Get all actors that the character is currently overlapping
+			GetOverlappingActors(OverlappingActors);
+
+			// Loop through each actor
+			for (AActor* Actor : OverlappingActors)
+			{
+				if (Actor->IsA(ABreakableActor::StaticClass()))
 				{
-					// Destroy the BreakableActor
-					BreakableActor->Destroy();
+					// Check if the actor is of the BreakableActor class
+					ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
+					if (BreakableActor != nullptr)
+					{
+						GetWorldTimerManager().SetTimer(DestroyTimerHandle, [BreakableActor]()
+						{
+							BreakableActor->Destroy();
+						}, 1.3f, false);
+					}
+				}
+
+				if (Actor->IsA(ATriggerActor::StaticClass()))
+				{
+					ATriggerActor* TActor = Cast<ATriggerActor>(Actor);
+
+					TActor->OnTriggerDelegate.Broadcast();
+					GetWorldTimerManager().SetTimer(DestroyTimerHandle, [TActor]()
+					{
+						TActor->Destroy();
+					}, 1.3f, false);
 				}
 			}
-
-			if (Actor->IsA(ATriggerActor::StaticClass()))
-			{
-				ATriggerActor* tactor = Cast<ATriggerActor>(Actor);
-				tactor->OnTriggerDelegate.Broadcast();
-				tactor->Destroy();
-			}
 		}
+		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 3.3f, false);
 	}
 }
 
 void AItTakesOneCharacter::JetEvent()
 {
 	LaunchCharacter(FVector(0, 0, 50), false, false);
+}
+
+void AItTakesOneCharacter::ResetAction()
+{
+	UpdateActionState(ECharacterActionStateEnum::IDLE);
+
+	if (IsHammer)
+	{
+		DetachEvent();
+		IsHammer = false;
+	}
 }
 
 void AItTakesOneCharacter::GlideHoldEvent()
@@ -227,4 +257,49 @@ void AItTakesOneCharacter::ClockEvent()
 			SetActorLocation(PositionHistory[0]);
 		}
 	}
+}
+
+bool AItTakesOneCharacter::CanPerformAction(ECharacterActionStateEnum UpdatedAction)
+{
+	switch (CharacterActionState)
+	{
+	case ECharacterActionStateEnum::IDLE:
+		return true;
+		break;
+	case ECharacterActionStateEnum::MOVE:
+		if (UpdatedAction != ECharacterActionStateEnum::HAMMER)
+			return true;
+		break;
+	case ECharacterActionStateEnum::JUMP:
+		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
+			UpdatedAction == ECharacterActionStateEnum::MOVE)
+			return true;
+		break;
+	case ECharacterActionStateEnum::DASH:
+		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
+			UpdatedAction == ECharacterActionStateEnum::MOVE)
+			return true;
+	case ECharacterActionStateEnum::HAMMER:
+		return false;
+		break;
+	}
+
+	return false;
+}
+
+void AItTakesOneCharacter::UpdateActionState(ECharacterActionStateEnum NewAction)
+{
+	if (NewAction == ECharacterActionStateEnum::MOVE || NewAction == ECharacterActionStateEnum::IDLE)
+	{
+		if (GetVelocity().Size() <= 0.1f)
+		{
+			CharacterActionState = ECharacterActionStateEnum::IDLE;
+		}
+		else
+		{
+			CharacterActionState = ECharacterActionStateEnum::MOVE;
+		}
+	}
+
+	CharacterActionState = NewAction;
 }

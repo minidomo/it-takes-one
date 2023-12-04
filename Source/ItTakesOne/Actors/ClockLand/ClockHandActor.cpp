@@ -3,6 +3,7 @@
 #include "Engine/Engine.h"
 #include "Components/PointLightComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
 #include "ItTakesOne/ItTakesOneCharacter.h"
 
 // Sets default values
@@ -16,6 +17,10 @@ AClockHandActor::AClockHandActor()
 
     ClockHandMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ClockHandMesh"));
     ClockHandMesh->SetupAttachment(RootComponent);
+   
+    CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
+    CollisionBox->SetupAttachment(PivotComponent);
+    CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AClockHandActor::OnOverlapBegin);
 
 
     // Adjust the position of ClockHandMesh so that its rotation point aligns with PivotComponent's origin
@@ -36,7 +41,6 @@ void AClockHandActor::Tick(float DeltaTime)
 
    
     RotateHand(DeltaTime);
-    OnOverlapBegin();
    
 }
 
@@ -47,18 +51,10 @@ void AClockHandActor::RotateHand(float DeltaTime)
     PivotComponent->SetWorldRotation(NewRotation);
 }
 
-void AClockHandActor::OnOverlapBegin()
+void AClockHandActor::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    // Check if the OtherActor is not null and not equal to this actor
-    TArray<AActor*> OverlappingActors;
-
-    GetOverlappingActors(OverlappingActors);
-
-    // Loop through each actor
-    for (AActor* Actor : OverlappingActors)
-    {
-        // Check if the actor is of the BreakableActor class
-        AItTakesOneCharacter* Character = Cast<AItTakesOneCharacter>(Actor);
+    // Check if the actor is of the BreakableActor class
+        AItTakesOneCharacter* Character = Cast<AItTakesOneCharacter>(OtherActor);
         if (Character)
         {
             if (GEngine)
@@ -68,5 +64,5 @@ void AClockHandActor::OnOverlapBegin()
             //character die
             Character->Destroyed();
         }
-    }
+    
 }

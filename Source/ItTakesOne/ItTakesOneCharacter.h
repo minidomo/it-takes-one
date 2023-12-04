@@ -7,6 +7,14 @@
 #include "InputActionValue.h"
 #include "ItTakesOneCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class ECharacterActionStateEnum : uint8 {
+	IDLE UMETA(DisplayName = "Idling"),
+	MOVE UMETA(DisplayName = "Moving"),
+	DASH UMETA(DisplayName = "Dashing"),
+	JUMP UMETA(DisplayName = "Jumping"),
+	HAMMER UMETA(DisplayName = "Hammering")
+};
 
 UCLASS(config=Game)
 class AItTakesOneCharacter : public ACharacter
@@ -44,14 +52,29 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartPositionRecording();
 
-	//UFUNCTION(BlueprintImplementableEvent)
 	void HammerEvent();
+	UFUNCTION(BlueprintImplementableEvent)
+	void AttachEvent();
 
-	//UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent)
+	void DetachEvent();
+
+	void ResetAction();
+
 	void ClockEvent();
 
 	//place the footstep for the clock
 	void PlaceFootstepDecals();
+
+	UFUNCTION(BlueprintCallable)
+	bool CanPerformAction(ECharacterActionStateEnum UpdatedAction);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateActionState(ECharacterActionStateEnum NewAction);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ECharacterActionStateEnum CharacterActionState;
+
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -69,6 +92,12 @@ private:
 	TArray<FVector> PositionHistory;
 	// Function to update position history
 	void UpdatePositionHistory();
+
+	FTimerHandle HammerTimerHandle;
+	FTimerHandle DestroyTimerHandle;
+
+	bool IsHammer = false;
+
 
 protected:
 	// Decal material for the footstep
