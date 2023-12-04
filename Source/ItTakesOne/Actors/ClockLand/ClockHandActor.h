@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/BoxComponent.h"
 #include "Components/SceneComponent.h"
 #include "ClockHandActor.generated.h"
 
@@ -29,6 +30,9 @@ public:
     UPROPERTY(VisibleAnywhere)
         UStaticMeshComponent* ClockHandMesh;
 
+    UPROPERTY(VisibleAnywhere)
+        UBoxComponent* CollisionBox;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
         USceneComponent* PivotComponent;
 
@@ -36,10 +40,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ClockHand")
         float RotationSpeed;
 
+    UFUNCTION()
+        void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 private:
     // Handles the rotation logic
     void RotateHand(float DeltaTime);
 
-    UFUNCTION()
-        void OnOverlapBegin();
+   
 };
