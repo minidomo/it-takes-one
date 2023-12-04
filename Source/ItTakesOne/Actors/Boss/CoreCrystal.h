@@ -7,6 +7,8 @@
 #include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "CoreCrystal.generated.h"
 
+class UBoxComponent;
+
 UCLASS()
 class ITTAKESONE_API ACoreCrystal : public AActor, public ISavableActorInterface
 {
@@ -22,6 +24,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Mesh;
 
+	UPROPERTY(VisibleAnywhere)
+	UBoxComponent* BoxComponent;
+
 	UPROPERTY(EditAnywhere, SaveGame)
 	float MaxTimeAlive;
 
@@ -32,5 +37,8 @@ protected:
 	void CallDestroy();
 
 public:
+	FORCEINLINE UStaticMeshComponent* GetMesh() const { return Mesh; }
+	FORCEINLINE UBoxComponent* GetBoxComponent() const { return BoxComponent; }
+
 	virtual void Destroyed() override;
 };

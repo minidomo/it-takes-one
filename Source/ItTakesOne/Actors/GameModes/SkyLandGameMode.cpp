@@ -3,6 +3,7 @@
 #include "SkyLandGameMode.h"
 
 #include "NavigationSystem.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "ItTakesOne/Actors/LevelTransitionActor.h"
 #include "ItTakesOne/Actors/Boss/CoreCrystal.h"
@@ -104,6 +105,8 @@ void ASkyLandGameMode::SpawnCoreCrystal()
 			Location = Result.Location;
 		}
 	}
+
+	Location.Z += CoreCrystalClass.GetDefaultObject()->GetBoxComponent()->GetScaledBoxExtent().Z;
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;

@@ -2,6 +2,7 @@
 
 #include "RingWave.h"
 
+#include "Components/BoxComponent.h"
 #include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 #include "ItTakesOne/Actors/PlayerStates/SkyPlayerState.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,10 +11,11 @@ class ASkyPlayerState;
 
 ARingWave::ARingWave()
 {
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
+	RootComponent = BoxComponent;
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = Mesh;
-	Mesh->SetCollisionProfileName("OverlapAll");
-	Mesh->SetWorldScale3D(FVector(.2, 50, 1));
+	Mesh->SetupAttachment(RootComponent);
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
@@ -27,7 +29,7 @@ void ARingWave::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Mesh->OnComponentBeginOverlap.AddDynamic(this, &ARingWave::OnBeginOverlap);
+	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ARingWave::OnBeginOverlap);
 	GetWorldTimerManager().SetTimer(DestroyTimeHandle, this, &ARingWave::CallDestroy, MaxTimeAlive);
 
 	if (const auto Boss = Cast<AWindBossCharacter>(
