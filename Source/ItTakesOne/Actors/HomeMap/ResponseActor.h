@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "ResponseActor.generated.h"
 
 UCLASS()
-class ITTAKESONE_API AResponseActor : public AActor
+class ITTAKESONE_API AResponseActor : public AActor, public ISavableActorInterface
 {
 	GENERATED_BODY()
 	
