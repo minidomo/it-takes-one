@@ -7,6 +7,14 @@
 #include "InputActionValue.h"
 #include "ItTakesOneCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class ECharacterActionStateEnum : uint8 {
+	IDLE UMETA(DisplayName = "Idling"),
+	MOVE UMETA(DisplayName = "Moving"),
+	DASH UMETA(DisplayName = "Dashing"),
+	JUMP UMETA(DisplayName = "Jumping"),
+	HAMMER UMETA(DisplayName = "Hammering")
+};
 
 UCLASS(config=Game)
 class AItTakesOneCharacter : public ACharacter
@@ -21,46 +29,72 @@ class AItTakesOneCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
-
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
-
 public:
 	AItTakesOneCharacter();
 
+	void MoveEvent(const FInputActionValue& Value);
+	void LookEvent(const FInputActionValue& Value);
 
-protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void JumpEvent();
 
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+	UFUNCTION(BlueprintImplementableEvent)
+	void DashEvent();
 
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
+	UFUNCTION(BlueprintImplementableEvent)
+	void PauseEvent();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void JetEvent();
 
-protected:
-	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UFUNCTION(BlueprintImplementableEvent)
+	void GliderEvent();
 
-	// To add mapping context
-	virtual void BeginPlay();
+	UFUNCTION(BlueprintCallable)
+	void StartPositionRecording();
+
+	void HammerEvent();
+	void ResetAction();
+
+	void ClockEvent();
+
+	//place the footstep for the clock
+	void PlaceFootstepDecals();
+
+	UFUNCTION(BlueprintCallable)
+	bool CanPerformAction(ECharacterActionStateEnum UpdatedAction);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateActionState(ECharacterActionStateEnum NewAction);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ECharacterActionStateEnum CharacterActionState;
+
 
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-};
 
+	virtual void Destroyed() override;
+
+private: 
+	FTimerHandle PositionHistoryTimerHandle;
+	// Array to store positions
+	TArray<FVector> PositionHistory;
+	// Function to update position history
+	void UpdatePositionHistory();
+
+	FTimerHandle HammerTimerHandle;
+
+
+protected:
+	// Decal material for the footstep
+	UPROPERTY(EditAnywhere, Category = "Footsteps")
+		UMaterialInterface* FootstepDecalMaterial;
+
+	// Decal size
+	UPROPERTY(EditAnywhere, Category = "Footsteps")
+		FVector DecalSize;
+};

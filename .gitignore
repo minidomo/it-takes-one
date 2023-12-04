@@ -1,8 +1,15 @@
+.DS_Store
+.idea
+.ignore
+.temp
+.vsconfig
+*.sln.*
+*.DotSettings.user
+*.blend1
+
 # Visual Studio 2015 user specific files
 .vs/
 .vscode/
-
-.DS_Store/
 
 # Compiled Object files
 *.slo
@@ -76,5 +83,3 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
-
-*.blend1
