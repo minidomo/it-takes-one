@@ -2,6 +2,7 @@
 
 #include "Rock.h"
 
+#include "Components/BoxComponent.h"
 #include "ItTakesOne/Actors/Boss/CoreCrystal.h"
 #include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
 #include "ItTakesOne/Actors/PlayerStates/SkyPlayerState.h"
@@ -9,12 +10,15 @@
 
 ARock::ARock()
 {
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
+	RootComponent = BoxComponent;
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = Mesh;
-	Mesh->SetCollisionProfileName("OverlapOnlyPawn");
+	Mesh->SetupAttachment(RootComponent);
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
+	bGenerateOverlapEventsDuringLevelStreaming = false;
 
 	Speed = 4000.f;
 	PlayerDamage = 10.f;
@@ -25,8 +29,7 @@ void ARock::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Mesh->OnComponentBeginOverlap.AddDynamic(this, &ARock::OnBeginOverlap);
-	Mesh->OnComponentHit.AddDynamic(this, &ARock::OnHit);
+	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ARock::OnBeginOverlap);
 
 	if (const auto Boss = Cast<AWindBossCharacter>(
 		UGameplayStatics::GetActorOfClass(this, AWindBossCharacter::StaticClass())))
@@ -42,6 +45,8 @@ void ARock::BeginPlay()
 void ARock::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (this == OtherActor || OtherActor->IsA(AWindBossCharacter::StaticClass())) { return; }
+
 	if (const auto Controller = OtherActor->GetInstigatorController())
 	{
 		if (const auto PlayerState = Controller->GetPlayerState<ASkyPlayerState>())
@@ -50,11 +55,7 @@ void ARock::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 			Destroy();
 		}
 	}
-}
 
-void ARock::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                  FVector NormalImpulse, const FHitResult& Hit)
-{
 	if (OtherActor->IsA(ACoreCrystal::StaticClass()))
 	{
 		if (const auto Boss = Cast<AWindBossCharacter>(

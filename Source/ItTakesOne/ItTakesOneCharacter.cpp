@@ -9,7 +9,6 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "Engine/GameEngine.h"
 #include "Components/DecalComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -55,6 +54,9 @@ AItTakesOneCharacter::AItTakesOneCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character)
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	GlideGravityScale = .1;
+	GetCharacterMovement()->GravityScale = 1.75;
 }
 
 
@@ -72,7 +74,8 @@ void AItTakesOneCharacter::Destroyed()
 
 void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 {
-	if (CanPerformAction(ECharacterActionStateEnum::MOVE)) {
+	if (CanPerformAction(ECharacterActionStateEnum::MOVE))
+	{
 		// input is a Vector2D
 		FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -96,7 +99,6 @@ void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 			GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 0.01f, false);
 		}
 	}
-	
 }
 
 void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
@@ -114,7 +116,10 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 
 void AItTakesOneCharacter::HammerEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::HAMMER)) {
+	if (CanPerformAction(ECharacterActionStateEnum::HAMMER))
+	{
+		IsHammer = true;
+		AttachEvent();
 		UpdateActionState(ECharacterActionStateEnum::HAMMER);
 		if (Controller != nullptr)
 		{
@@ -133,38 +138,85 @@ void AItTakesOneCharacter::HammerEvent()
 			// Loop through each actor
 			for (AActor* Actor : OverlappingActors)
 			{
-				if (Actor->IsA(ABreakableActor::StaticClass())) {
+				if (Actor->IsA(ABreakableActor::StaticClass()))
+				{
 					// Check if the actor is of the BreakableActor class
 					ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
 					if (BreakableActor != nullptr)
 					{
-						BreakableActor->Destroy();
+						GetWorldTimerManager().SetTimer(DestroyTimerHandle, [BreakableActor]()
+						{
+							BreakableActor->Destroy();
+						}, 1.3f, false);
 					}
 				}
 
-				if (Actor->IsA(ATriggerActor::StaticClass())) {
-					ATriggerActor* tactor = Cast<ATriggerActor>(Actor);
-					tactor->OnTriggerDelegate.Broadcast();
-					tactor->Destroy();
+				if (Actor->IsA(ATriggerActor::StaticClass()))
+				{
+					ATriggerActor* TActor = Cast<ATriggerActor>(Actor);
+
+					TActor->OnTriggerDelegate.Broadcast();
+					GetWorldTimerManager().SetTimer(DestroyTimerHandle, [TActor]()
+					{
+						TActor->Destroy();
+					}, 1.3f, false);
 				}
 			}
 		}
-		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 2.f, false);
+		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 3.3f, false);
 	}
 }
 
-void AItTakesOneCharacter::ResetAction() {
-	if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("reset action"));
-		}
-	UpdateActionState(ECharacterActionStateEnum::IDLE);
+void AItTakesOneCharacter::JetEvent()
+{
+	if (CanPerformAction(ECharacterActionStateEnum::JET)) {
+		UpdateActionState(ECharacterActionStateEnum::JET);
+		LaunchCharacter(FVector(0, 0, 100), false, false);
+	}
+	
 }
 
-void AItTakesOneCharacter::StartPositionRecording() {
 
-	GetWorld()->GetTimerManager().SetTimer(PositionHistoryTimerHandle, this, &AItTakesOneCharacter::UpdatePositionHistory, 0.2f, true);
+void AItTakesOneCharacter::ResetAction()
+{
+	UpdateActionState(ECharacterActionStateEnum::IDLE);
+
+	if (IsHammer)
+	{
+		DetachEvent();
+		IsHammer = false;
+	}
+}
+
+void AItTakesOneCharacter::GlideHoldEvent()
+{
+	if (CanPerformAction(ECharacterActionStateEnum::GLIDE)) {
+
+		UpdateActionState(ECharacterActionStateEnum::GLIDE);
+
+		const bool Falling = GetCharacterMovement()->Velocity.Z < 0;
+
+		if (Falling)
+		{
+			GetCharacterMovement()->GravityScale = GlideGravityScale;
+		}
+		else
+		{
+			GetCharacterMovement()->GravityScale = InitialGravityScale;
+		}
+	}
 	
+}
+
+void AItTakesOneCharacter::GlideEndEvent()
+{
+	GetCharacterMovement()->GravityScale = InitialGravityScale;
+}
+
+void AItTakesOneCharacter::StartPositionRecording()
+{
+	GetWorld()->GetTimerManager().SetTimer(PositionHistoryTimerHandle, this,
+	                                       &AItTakesOneCharacter::UpdatePositionHistory, 0.2f, true);
 }
 
 void AItTakesOneCharacter::UpdatePositionHistory()
@@ -181,22 +233,28 @@ void AItTakesOneCharacter::UpdatePositionHistory()
 	PlaceFootstepDecals();
 }
 
+void AItTakesOneCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	InitialGravityScale = GetCharacterMovement()->GravityScale;
+}
+
 void AItTakesOneCharacter::PlaceFootstepDecals()
 {
-		float HalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-		FVector FloorPosition = GetActorLocation() - FVector(0.0f, 0.0f, HalfHeight);
-		FVector DecalPosition = FloorPosition + FVector(0.0f, 0.0f, 0.0f);
-		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), FootstepDecalMaterial, DecalSize, DecalPosition, FRotator(0.f, 0.f, 0.f), 3.0f);
+	float HalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	FVector FloorPosition = GetActorLocation() - FVector(0.0f, 0.0f, HalfHeight);
+	FVector DecalPosition = FloorPosition + FVector(0.0f, 0.0f, 0.0f);
+	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), FootstepDecalMaterial, DecalSize,
+	                                                                DecalPosition, FRotator(0.f, 0.f, 0.f), 3.0f);
 
-		if (Decal)
-		{
-			Decal->SetFadeScreenSize(0.0001f);
-		}
+	if (Decal)
+	{
+		Decal->SetFadeScreenSize(0.0001f);
+	}
 }
 
 void AItTakesOneCharacter::ClockEvent()
 {
-
 	if (Controller != nullptr)
 	{
 		if (GEngine)
@@ -209,7 +267,6 @@ void AItTakesOneCharacter::ClockEvent()
 			// Move the character to the position from 3 seconds ago
 			SetActorLocation(PositionHistory[0]);
 		}
-		
 	}
 }
 
@@ -217,49 +274,51 @@ bool AItTakesOneCharacter::CanPerformAction(ECharacterActionStateEnum UpdatedAct
 {
 	switch (CharacterActionState)
 	{
-		case ECharacterActionStateEnum::IDLE:
+	case ECharacterActionStateEnum::IDLE:
 		return true;
 		break;
-		case ECharacterActionStateEnum::MOVE:
+	case ECharacterActionStateEnum::MOVE:
 		if (UpdatedAction != ECharacterActionStateEnum::HAMMER)
 			return true;
 		break;
-		case ECharacterActionStateEnum::JUMP:
+	case ECharacterActionStateEnum::JUMP:
 		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
 			UpdatedAction == ECharacterActionStateEnum::MOVE)
 			return true;
 		break;
-		case ECharacterActionStateEnum::DASH:
+	case ECharacterActionStateEnum::DASH:
 		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
 			UpdatedAction == ECharacterActionStateEnum::MOVE)
 			return true;
-		case ECharacterActionStateEnum::HAMMER:
+	case ECharacterActionStateEnum::HAMMER:
 		return false;
+		break;
+	case ECharacterActionStateEnum::JET:
+		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
+			return true;
+		break;
+	case ECharacterActionStateEnum::GLIDE:
+		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
+			return true;
 		break;
 	}
 
-    return false;
+	return false;
 }
 
 void AItTakesOneCharacter::UpdateActionState(ECharacterActionStateEnum NewAction)
 {
 	if (NewAction == ECharacterActionStateEnum::MOVE || NewAction == ECharacterActionStateEnum::IDLE)
 	{
-		if(GetVelocity().Size() <= 0.1f)
+		if (GetVelocity().Size() <= 0.1f)
 		{
 			CharacterActionState = ECharacterActionStateEnum::IDLE;
-		} else
+		}
+		else
 		{
 			CharacterActionState = ECharacterActionStateEnum::MOVE;
 		}
 	}
-	
+
 	CharacterActionState = NewAction;
-	if (GEngine)
-		{
-			FString ActionStateString = UEnum::GetValueAsString(CharacterActionState);
-			FString ActionStateString2 = UEnum::GetValueAsString(NewAction);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("New Action: ") + ActionStateString2);
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Character Action State: ") + ActionStateString);
-		}
 }

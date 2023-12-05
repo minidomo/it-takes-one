@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItTakesOne/Data/SaveGames/ContentSaveGame.h"
 #include "UObject/Interface.h"
 #include "SavableActorInterface.generated.h"
 

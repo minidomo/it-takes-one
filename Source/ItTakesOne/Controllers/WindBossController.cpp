@@ -29,6 +29,7 @@ EWindBossAttack AWindBossController::GetRandomAttack()
 
 	EWindBossAttack Ret;
 	const float V = FMath::FRand();
+	// TODO maybe check if boss can see player before choosing rock throw
 
 	if (HealthPerecentage < .5)
 	{

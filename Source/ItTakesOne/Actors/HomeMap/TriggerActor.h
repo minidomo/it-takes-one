@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "TriggerActor.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTriggerDelegate);
 
 UCLASS()
-class ITTAKESONE_API ATriggerActor : public AActor
+class ITTAKESONE_API ATriggerActor : public AActor, public ISavableActorInterface
 {
 	GENERATED_BODY()
 	
