@@ -7,6 +7,8 @@
 #include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "Rock.generated.h"
 
+class UBoxComponent;
+
 UCLASS()
 class ITTAKESONE_API ARock : public AActor, public ISavableActorInterface
 {
@@ -18,6 +20,9 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(VisibleAnywhere)
+	UBoxComponent* BoxComponent;
 
 	UPROPERTY(SaveGame)
 	FVector Direction;
@@ -37,10 +42,6 @@ protected:
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                    int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	           FVector NormalImpulse, const FHitResult& Hit);
 
 	UFUNCTION()
 	void OnBossDestroyed(AActor* DestroyedActor);

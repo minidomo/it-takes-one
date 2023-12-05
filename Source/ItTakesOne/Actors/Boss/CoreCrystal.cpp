@@ -2,12 +2,16 @@
 
 #include "CoreCrystal.h"
 
+#include "Components/BoxComponent.h"
 #include "ItTakesOne/Actors/GameModes/SkyLandGameMode.h"
 
 ACoreCrystal::ACoreCrystal()
 {
+	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Box"));
+	RootComponent = BoxComponent;
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	RootComponent = Mesh;
+	Mesh->SetupAttachment(RootComponent);
 
 	MaxTimeAlive = 15.f;
 }

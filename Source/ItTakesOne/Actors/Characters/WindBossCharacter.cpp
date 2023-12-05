@@ -3,6 +3,7 @@
 #include "WindBossCharacter.h"
 
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "ItTakesOne/Actors/Boss/Attacks/RingWave.h"
 #include "ItTakesOne/Actors/Boss/Attacks/Rock.h"
 
@@ -12,11 +13,30 @@ AWindBossCharacter::AWindBossCharacter()
 	Health = 400.f;
 	MaxHealth = 400.f;
 	ActorsPerRingWave = 5;
+
+	GetCharacterMovement()->GravityScale = 0;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
 void AWindBossCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AWindBossCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	const auto PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
+	if (!PlayerCharacter) { return; }
+
+	auto PlayerLocation = PlayerCharacter->GetActorLocation();
+	const auto BossLocation = GetActorLocation();
+	PlayerLocation.Z = BossLocation.Z;
+
+	const auto Rotation = (PlayerLocation - BossLocation).Rotation();
+	SetActorRotation(Rotation);
 }
 
 void AWindBossCharacter::ApplyDamage(float Damage)
@@ -33,6 +53,7 @@ void AWindBossCharacter::ApplyDamage(float Damage)
 
 void AWindBossCharacter::RingWaveAttack()
 {
+	bRingWaveAttack = true;
 	const auto PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
 	if (!PlayerCharacter) { return; }
 
@@ -72,6 +93,8 @@ void AWindBossCharacter::RingWaveAttack()
 
 void AWindBossCharacter::RockThrowAttack()
 {
+	// TODO maybe check if boss can see the player before firing
+	bRockThrowAttack = true;
 	const auto PlayerCharacter = GetWorld()->GetFirstPlayerController()->GetCharacter();
 	if (!PlayerCharacter) { return; }
 
@@ -112,6 +135,7 @@ void AWindBossCharacter::RockThrowAttackSequence()
 
 void AWindBossCharacter::DispatchAttackComplete()
 {
+	bRingWaveAttack = bRockThrowAttack = false;
 	GetWorldTimerManager().ClearTimer(AttackStartTimerHandle);
 	OnAttackCompleteDelegate.Broadcast();
 }

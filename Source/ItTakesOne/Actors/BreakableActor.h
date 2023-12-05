@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "BreakableActor.generated.h"
 
 UCLASS()
-class ITTAKESONE_API ABreakableActor : public AActor
+class ITTAKESONE_API ABreakableActor : public AActor, public ISavableActorInterface
 {
     GENERATED_BODY()
 
@@ -20,7 +21,7 @@ protected:
 public:
     virtual void Tick(float DeltaTime) override;
 
-    UPROPERTY(VisibleAnywhere)
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
         class UStaticMeshComponent* MeshComponent;
 
     UPROPERTY(VisibleAnywhere)

@@ -13,7 +13,9 @@ enum class ECharacterActionStateEnum : uint8 {
 	MOVE UMETA(DisplayName = "Moving"),
 	DASH UMETA(DisplayName = "Dashing"),
 	JUMP UMETA(DisplayName = "Jumping"),
-	HAMMER UMETA(DisplayName = "Hammering")
+	HAMMER UMETA(DisplayName = "Hammering"),
+	JET UMETA(DisplayName = "Jet"),
+	GLIDE UMETA(DisplayName = "Gliding")
 };
 
 UCLASS(config=Game)
@@ -44,16 +46,22 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void PauseEvent();
 
-	UFUNCTION(BlueprintImplementableEvent)
 	void JetEvent();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void GliderEvent();
+	void GlideHoldEvent();
+	void GlideEndEvent();
 
 	UFUNCTION(BlueprintCallable)
 	void StartPositionRecording();
 
 	void HammerEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void AttachEvent();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void DetachEvent();
+
 	void ResetAction();
 
 	void ClockEvent();
@@ -79,7 +87,9 @@ public:
 
 	virtual void Destroyed() override;
 
-private: 
+private:
+	float InitialGravityScale;
+
 	FTimerHandle PositionHistoryTimerHandle;
 	// Array to store positions
 	TArray<FVector> PositionHistory;
@@ -87,14 +97,22 @@ private:
 	void UpdatePositionHistory();
 
 	FTimerHandle HammerTimerHandle;
+	FTimerHandle DestroyTimerHandle;
+
+	bool IsHammer = false;
 
 
 protected:
 	// Decal material for the footstep
 	UPROPERTY(EditAnywhere, Category = "Footsteps")
-		UMaterialInterface* FootstepDecalMaterial;
+	UMaterialInterface* FootstepDecalMaterial;
 
 	// Decal size
 	UPROPERTY(EditAnywhere, Category = "Footsteps")
-		FVector DecalSize;
+	FVector DecalSize;
+
+	UPROPERTY(EditAnywhere, Category = Glide)
+	float GlideGravityScale;
+
+	virtual void BeginPlay() override;
 };

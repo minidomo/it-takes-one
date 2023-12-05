@@ -7,6 +7,8 @@
 #include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "RingWave.generated.h"
 
+class UBoxComponent;
+
 UCLASS()
 class ITTAKESONE_API ARingWave : public AActor, public ISavableActorInterface
 {
@@ -21,6 +23,9 @@ private:
 protected:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Mesh;
+
+	UPROPERTY(VisibleAnywhere)
+	UBoxComponent* BoxComponent;
 
 	UPROPERTY(SaveGame)
 	FVector Direction;
