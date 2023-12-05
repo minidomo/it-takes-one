@@ -13,7 +13,9 @@ enum class ECharacterActionStateEnum : uint8 {
 	MOVE UMETA(DisplayName = "Moving"),
 	DASH UMETA(DisplayName = "Dashing"),
 	JUMP UMETA(DisplayName = "Jumping"),
-	HAMMER UMETA(DisplayName = "Hammering")
+	HAMMER UMETA(DisplayName = "Hammering"),
+	JET UMETA(DisplayName = "Jet"),
+	GLIDE UMETA(DisplayName = "Gliding")
 };
 
 UCLASS(config=Game)
@@ -53,6 +55,7 @@ public:
 	void StartPositionRecording();
 
 	void HammerEvent();
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void AttachEvent();
 
