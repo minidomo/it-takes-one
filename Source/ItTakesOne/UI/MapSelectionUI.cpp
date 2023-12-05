@@ -4,13 +4,40 @@
 #include "MapSelectionUI.h"
 #include "MainMenuUI.h"
 #include "ItTakesOne/Controllers/MainMenuPlayerController.h"
+#include "ItTakesOne/Data/SaveGames/ContentSaveGame.h"
+#include "ItTakesOne/Framework/MainGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 void UMapSelectionUI::NativeConstruct()
 {
-	if (ClockLandButton) ClockLandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnClockLandButtonClick);
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
+
+	if (ClockLandButton)
+	{
+		if (ContentData->Home.bPlaythroughComplete)
+		{
+			ClockLandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnClockLandButtonClick);
+		}
+		else
+		{
+			ClockLandButton->SetIsEnabled(false);
+		}
+	}
+
+	if (SkyIslandButton)
+	{
+		if (ContentData->ClockLand.bPlaythroughComplete)
+		{
+			SkyIslandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnSkyIslandButtonClick);
+		}
+		else
+		{
+			SkyIslandButton->SetIsEnabled(false);
+		}
+	}
+
 	if (HomeMapButton) HomeMapButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnHomeMapButtonClick);
-	if (SkyIslandButton) SkyIslandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnSkyIslandButtonClick);
 	if (BackButton) BackButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnBackButtonClick);
 	if (LeftButton) LeftButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnLeftButtonClick);
 	if (RightButton) RightButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnRightButtonClick);
