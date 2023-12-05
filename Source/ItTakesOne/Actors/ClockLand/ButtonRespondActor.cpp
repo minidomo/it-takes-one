@@ -31,21 +31,25 @@ void AButtonRespondActor::BeginPlay()
 void AButtonRespondActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-    if (bIsElevating)
-    {
-        CurrentElevationTime += DeltaTime;
-        float Alpha = FMath::Clamp(CurrentElevationTime / TotalElevationTime, 0.0f, 1.0f);
-        FVector NewLocation = FMath::Lerp(OriginalLocation, TargetLocation, Alpha);
-        RespondMesh->SetWorldLocation(NewLocation);
-
-        if (Alpha >= 1.0f)
+   
+    if (IsPlane) {
+        if (bIsElevating)
         {
-            bIsElevating = false;
-            CurrentElevationTime = 0.0f;
-        }
-    }
+            CurrentElevationTime += DeltaTime;
+            float Alpha = FMath::Clamp(CurrentElevationTime / TotalElevationTime, 0.0f, 1.0f);
+            FVector NewLocation = FMath::Lerp(OriginalLocation, TargetLocation, Alpha);
+            RespondMesh->SetWorldLocation(NewLocation);
 
+            if (Alpha >= 1.0f)
+            {
+                bIsElevating = false;
+                CurrentElevationTime = 0.0f;
+            }
+        }
+
+        
+    }
+   
     CheckButtons();
 }
 
@@ -59,8 +63,30 @@ void AButtonRespondActor::CheckButtons()
         }
     }
 
-    ElevatePlane();
+    if (IsPlane) {
+        ElevatePlane();
+    }
+    else if (IsSpawn) {
+        MakeVisible();
+    }
+
 }
+void  AButtonRespondActor::MakeVisible() {
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Plane Visible"));
+    }
+
+    if (RootComponent && RootComponent->IsA(UStaticMeshComponent::StaticClass()))
+    {
+        
+        Cast<UStaticMeshComponent>(RootComponent)->SetVisibility(true);
+        SetActorHiddenInGame(false);
+        RespondMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    }
+}
+
+
 
 void AButtonRespondActor::ElevatePlane()
 {

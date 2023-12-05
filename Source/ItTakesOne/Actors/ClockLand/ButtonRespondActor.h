@@ -35,7 +35,14 @@ public:
 
 	FTimerHandle DoorTimerHandle;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+		bool IsPlane;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+		bool IsSpawn;
+
 	void ElevatePlane();
+
+	void MakeVisible();
 
 private:
 	// Flag to check if the plane has already elevated
