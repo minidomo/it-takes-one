@@ -31,8 +31,15 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	GroundSpeed = FVector(Velocity.X, Velocity.Y, 0).Length();
 	bFalling = CharacterMovement->IsFalling();
 
-	bMoving = !CharacterMovement->GetCurrentAcceleration().IsZero() && GroundSpeed > 3;
-	bDash = Character->IsDash();
+	TArray Statuses = {
+		bMoving = !CharacterMovement->GetCurrentAcceleration().IsZero() && GroundSpeed > 3,
+		bDash = Character->IsDash(),
+		bHammer = Character->IsHammer(),
+	};
 
-	bIdle = !(bMoving || bDash);
+	bIdle = true;
+	for (const auto& Status : Statuses)
+	{
+		bIdle &= !Status;
+	}
 }

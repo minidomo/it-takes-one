@@ -77,6 +77,9 @@ void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 	// if (CanPerformAction(ECharacterActionStateEnum::MOVE))
 	// {
 	// input is a Vector2D
+
+	if (bHammer) { return; }
+
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)

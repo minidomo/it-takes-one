@@ -42,6 +42,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bDash;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bHammer;
+
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
