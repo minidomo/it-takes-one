@@ -6,6 +6,7 @@
 #include "ButtonActor.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TextRenderComponent.h"
 #include "ButtonRespondActor.generated.h"
 
 UCLASS()
@@ -20,6 +21,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+		UTextRenderComponent* TextComponent;
 
 public:	
 	// Called every frame
@@ -39,10 +43,14 @@ public:
 		bool IsPlane;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
 		bool IsSpawn;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+		bool IsBoard;
 
 	void ElevatePlane();
 
 	void MakeVisible();
+
+	void ShowBoard();
 
 private:
 	// Flag to check if the plane has already elevated

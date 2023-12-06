@@ -24,8 +24,6 @@ AClockHandActor::AClockHandActor()
 
 
     // Adjust the position of ClockHandMesh so that its rotation point aligns with PivotComponent's origin
-
-    RotationSpeed = 30.0f;
 }
 
 // Called when the game starts or when spawned
