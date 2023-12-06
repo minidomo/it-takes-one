@@ -42,6 +42,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* LevelName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* LockedText;
+
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
@@ -65,9 +68,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetLevelName(FText Name);
 
+	void SetLockText(FText Name);
+	void HideText();
+
 	UPROPERTY(EditAnywhere, Category = "Class Type")
 	TSubclassOf<UUserWidget> MenuWidgetClass;
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Runtime")
 	class UMainMenuUI* MainMenuWidget;
+
+private:
+	FTimerHandle LockTimerHandle;
+	float ShowTime = .5f;
 };

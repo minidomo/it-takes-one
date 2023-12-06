@@ -7,47 +7,40 @@
 #include "ItTakesOne/Data/SaveGames/ContentSaveGame.h"
 #include "ItTakesOne/Framework/MainGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 void UMapSelectionUI::NativeConstruct()
 {
-	const auto GameInstance = GetGameInstance<UMainGameInstance>();
-	const auto ContentData = GameInstance->GetContentData();
-
-	if (ClockLandButton)
-	{
-		if (ContentData->Home.bPlaythroughComplete)
-		{
-			ClockLandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnClockLandButtonClick);
-		}
-		else
-		{
-			ClockLandButton->SetIsEnabled(false);
-		}
-	}
-
-	if (SkyIslandButton)
-	{
-		if (ContentData->ClockLand.bPlaythroughComplete)
-		{
-			SkyIslandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnSkyIslandButtonClick);
-		}
-		else
-		{
-			SkyIslandButton->SetIsEnabled(false);
-		}
-	}
-
+	if (ClockLandButton) ClockLandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnClockLandButtonClick);
+	if (SkyIslandButton) SkyIslandButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnSkyIslandButtonClick);
 	if (HomeMapButton) HomeMapButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnHomeMapButtonClick);
 	if (BackButton) BackButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnBackButtonClick);
 	if (LeftButton) LeftButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnLeftButtonClick);
 	if (RightButton) RightButton->OnClicked.AddDynamic(this, &UMapSelectionUI::OnRightButtonClick);
 }
 
+void UMapSelectionUI::HideText() 
+{
+	SetLockText(FText::FromString(""));
+}
+
 void UMapSelectionUI::OnClockLandButtonClick()
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("clock clicked"));
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
 
-	UGameplayStatics::OpenLevel(this, FName("ClockLand"));
+	if (ContentData->Home.bPlaythroughComplete)
+	{
+		UGameplayStatics::OpenLevel(this, FName("ClockLand"));
+	}
+	else
+	{
+		if (LockedText)
+		{
+			SetLockText(FText::FromString("Level Not Yet Unlocked!"));
+			GetWorld()->GetTimerManager().SetTimer(LockTimerHandle, this, &UMapSelectionUI::HideText, ShowTime, false);
+		}
+	}
 }
 
 void UMapSelectionUI::OnHomeMapButtonClick()
@@ -59,9 +52,21 @@ void UMapSelectionUI::OnHomeMapButtonClick()
 
 void UMapSelectionUI::OnSkyIslandButtonClick()
 {
-	if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("sky clicked"));
+	const auto GameInstance = GetGameInstance<UMainGameInstance>();
+	const auto ContentData = GameInstance->GetContentData();
 
-	UGameplayStatics::OpenLevel(this, FName("SkyIsland"));
+	if (ContentData->ClockLand.bPlaythroughComplete)
+	{
+		UGameplayStatics::OpenLevel(this, FName("SkyIsland"));
+	}
+	else
+	{
+		if (LockedText)
+		{
+			SetLockText(FText::FromString("Level Not Yet Unlocked!"));
+			GetWorld()->GetTimerManager().SetTimer(LockTimerHandle, this, &UMapSelectionUI::HideText, ShowTime, false);
+		}
+	}
 }
 
 void UMapSelectionUI::OnBackButtonClick()
@@ -88,4 +93,9 @@ void UMapSelectionUI::OnBackButtonClick()
 void UMapSelectionUI::SetLevelName(FText Name)
 {
 	if (LevelName) LevelName->SetText(Name);
+}
+
+void UMapSelectionUI::SetLockText(FText Name)
+{
+	if (LockedText) LockedText->SetText(Name);
 }
