@@ -130,10 +130,7 @@ void APlayableGameModeBase::LoadSaveGame()
 		const auto SavableActor = Cast<ISavableActorInterface>(Actor);
 		if (IsValid(Actor) && SavableActor)
 		{
-			FActorSaveData* Data = WorldData->Actors.FindByPredicate([&](const FActorSaveData& Element)
-			{
-				return Element.Name == Actor->GetFName();
-			});
+			FActorSaveData* Data = ContentData->FindData(WorldData->Actors, Actor);
 
 			if (Data)
 			{
@@ -252,10 +249,7 @@ void APlayableGameModeBase::LoadPlayerState(APlayerState* PlayerState)
 	const auto GameInstance = GetGameInstance<UMainGameInstance>();
 	const auto ContentData = GameInstance->GetContentData();
 
-	FActorSaveData* Data = WorldData->Actors.FindByPredicate([&](const FActorSaveData& Element)
-	{
-		return Element.Name == CurPlayerState->GetFName();
-	});
+	FActorSaveData* Data = ContentData->FindData(WorldData->Actors, CurPlayerState);
 
 	if (Data && ContentData->LoadActor(CurPlayerState, *Data))
 	{

@@ -2,6 +2,7 @@
 
 #include "Rock.h"
 
+#include "RingWave.h"
 #include "Components/BoxComponent.h"
 #include "ItTakesOne/Actors/Boss/CoreCrystal.h"
 #include "ItTakesOne/Actors/Characters/WindBossCharacter.h"
@@ -45,7 +46,8 @@ void ARock::BeginPlay()
 void ARock::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                            int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (this == OtherActor || OtherActor->IsA(AWindBossCharacter::StaticClass())) { return; }
+	if (this == OtherActor || OtherActor->IsA(AWindBossCharacter::StaticClass()) || OtherActor->IsA(
+		ARingWave::StaticClass())) { return; }
 
 	if (const auto Controller = OtherActor->GetInstigatorController())
 	{
