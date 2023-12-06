@@ -55,7 +55,7 @@ void UMapSelectionUI::OnSkyIslandButtonClick()
 	const auto GameInstance = GetGameInstance<UMainGameInstance>();
 	const auto ContentData = GameInstance->GetContentData();
 
-	if (ContentData->Home.bPlaythroughComplete)
+	if (ContentData->ClockLand.bPlaythroughComplete)
 	{
 		UGameplayStatics::OpenLevel(this, FName("SkyIsland"));
 	}
