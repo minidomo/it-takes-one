@@ -57,6 +57,11 @@ AItTakesOneCharacter::AItTakesOneCharacter()
 
 	GlideGravityScale = .1;
 	GetCharacterMovement()->GravityScale = 1.75;
+	DashMagnitude = 1000.f;
+	DashAnimationTime = .5f;
+	HammerAnimationTime = 3.35f;
+	DestroyAnimationTime = 1.4f;
+	JetMagnitude = 100.f;
 }
 
 
@@ -72,32 +77,49 @@ void AItTakesOneCharacter::Destroyed()
 	}
 }
 
+void AItTakesOneCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bJet)
+	{
+		bJet = !IsFallingZ();
+	}
+
+	if (bJump)
+	{
+		bJump = !IsFallingZ();
+	}
+}
+
+void AItTakesOneCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	bJet = bGlide = bJump = false;
+}
+
 void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 {
-	if (CanPerformAction(ECharacterActionStateEnum::MOVE))
+	if (bHammer) { return; }
+
+	// input is a Vector2D
+	FVector2D MovementVector = Value.Get<FVector2D>();
+
+	if (Controller != nullptr)
 	{
-		// input is a Vector2D
-		FVector2D MovementVector = Value.Get<FVector2D>();
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		if (Controller != nullptr)
-		{
-			// find out which way is forward
-			const FRotator Rotation = Controller->GetControlRotation();
-			const FRotator YawRotation(0, Rotation.Yaw, 0);
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-			// get forward vector
-			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		// get right vector
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-			// get right vector
-			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-			// add movement
-			AddMovementInput(ForwardDirection, MovementVector.Y);
-			AddMovementInput(RightDirection, MovementVector.X);
-
-			UpdateActionState(ECharacterActionStateEnum::MOVE);
-			GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 0.01f, false);
-		}
+		// add movement
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
 	}
 }
 
@@ -114,102 +136,107 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 	}
 }
 
+void AItTakesOneCharacter::JumpEvent()
+{
+	if (!FMath::IsNearlyZero(GetCharacterMovement()->Velocity.Z) || bHammer) { return; }
+
+	bJump = true;
+	Jump();
+}
+
+void AItTakesOneCharacter::DashEvent()
+{
+	if (bHammer || !DashAvailable || !IsMoving() || bJet || bGlide) { return; }
+
+	DashAvailable = false;
+	bDash = true;
+	FVector DashVelocity = GetActorForwardVector() * DashMagnitude;
+	LaunchCharacter(DashVelocity, false, false);
+
+	// needs to be different timers because using SetTimer on a timer that is currently being used will result in the
+	// first one getting cleared
+	GetWorldTimerManager().SetTimer(DashTimerHandle, [&] { bDash = false; }, DashAnimationTime, false);
+	GetWorldTimerManager().SetTimer(DashCoolDownHandle, [&] { DashAvailable = true; }, DashCoolDown, false);
+}
+
 void AItTakesOneCharacter::HammerEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::HAMMER))
+	if (!GetCharacterMovement()->Velocity.IsZero() || bDash || bHammer) { return; }
+
+	bHammer = true;
+	AttachEvent();
+
+	if (GEngine)
 	{
-		IsHammer = true;
-		AttachEvent();
-		UpdateActionState(ECharacterActionStateEnum::HAMMER);
-		if (Controller != nullptr)
-		{
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Hammer"));
-			}
-
-			// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
-			// Array to hold all overlapping actors
-			TArray<AActor*> OverlappingActors;
-
-			// Get all actors that the character is currently overlapping
-			GetOverlappingActors(OverlappingActors);
-
-			// Loop through each actor
-			for (AActor* Actor : OverlappingActors)
-			{
-				if (Actor->IsA(ABreakableActor::StaticClass()))
-				{
-					// Check if the actor is of the BreakableActor class
-					ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
-					if (BreakableActor != nullptr)
-					{
-						GetWorldTimerManager().SetTimer(DestroyTimerHandle, [BreakableActor]()
-						{
-							BreakableActor->Destroy();
-						}, 1.3f, false);
-					}
-				}
-
-				if (Actor->IsA(ATriggerActor::StaticClass()))
-				{
-					ATriggerActor* TActor = Cast<ATriggerActor>(Actor);
-
-					TActor->OnTriggerDelegate.Broadcast();
-					GetWorldTimerManager().SetTimer(DestroyTimerHandle, [TActor]()
-					{
-						TActor->Destroy();
-					}, 1.3f, false);
-				}
-			}
-		}
-		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 3.3f, false);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Hammer"));
 	}
+
+	// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
+	// Array to hold all overlapping actors
+	TArray<AActor*> OverlappingActors;
+
+	// Get all actors that the character is currently overlapping
+	GetOverlappingActors(OverlappingActors);
+
+	// Loop through each actor
+	for (AActor* Actor : OverlappingActors)
+	{
+		if (Actor->IsA(ABreakableActor::StaticClass()))
+		{
+			// Check if the actor is of the BreakableActor class
+			ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
+			GetWorldTimerManager().SetTimer(DestroyTimerHandle, [BreakableActor]()
+			{
+				BreakableActor->Destroy();
+			}, DestroyAnimationTime, false);
+
+			// destroy the first one found, so break afterwards
+			break;
+		}
+
+		if (Actor->IsA(ATriggerActor::StaticClass()))
+		{
+			ATriggerActor* TActor = Cast<ATriggerActor>(Actor);
+			TActor->OnTriggerDelegate.Broadcast();
+			GetWorldTimerManager().SetTimer(DestroyTimerHandle, [TActor]()
+			{
+				TActor->Destroy();
+			}, DestroyAnimationTime, false);
+
+			// destroy the first one found, so break afterwards
+			break;
+		}
+	}
+
+	GetWorldTimerManager().SetTimer(HammerTimerHandle, [&]
+	{
+		DetachEvent();
+		bHammer = false;
+	}, HammerAnimationTime, false);
 }
 
 void AItTakesOneCharacter::JetEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::JET)) {
-		UpdateActionState(ECharacterActionStateEnum::JET);
-		LaunchCharacter(FVector(0, 0, 100), false, false);
-	}
-	
-}
-
-
-void AItTakesOneCharacter::ResetAction()
-{
-	UpdateActionState(ECharacterActionStateEnum::IDLE);
-
-	if (IsHammer)
-	{
-		DetachEvent();
-		IsHammer = false;
-	}
+	bJet = true;
+	LaunchCharacter(FVector(0, 0, JetMagnitude), false, false);
 }
 
 void AItTakesOneCharacter::GlideHoldEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::GLIDE)) {
-
-		UpdateActionState(ECharacterActionStateEnum::GLIDE);
-
-		const bool Falling = GetCharacterMovement()->Velocity.Z < 0;
-
-		if (Falling)
-		{
-			GetCharacterMovement()->GravityScale = GlideGravityScale;
-		}
-		else
-		{
-			GetCharacterMovement()->GravityScale = InitialGravityScale;
-		}
+	if (IsFallingZ())
+	{
+		bGlide = true;
+		GetCharacterMovement()->GravityScale = GlideGravityScale;
 	}
-	
+	else
+	{
+		GetCharacterMovement()->GravityScale = InitialGravityScale;
+	}
 }
 
 void AItTakesOneCharacter::GlideEndEvent()
 {
+	bGlide = false;
 	GetCharacterMovement()->GravityScale = InitialGravityScale;
 }
 
@@ -253,6 +280,18 @@ void AItTakesOneCharacter::PlaceFootstepDecals()
 	}
 }
 
+bool AItTakesOneCharacter::IsFallingZ()
+{
+	return GetCharacterMovement()->Velocity.Z < 0;
+}
+
+bool AItTakesOneCharacter::IsMoving()
+{
+	const FVector Velocity = GetCharacterMovement()->Velocity;
+	const float GroundSpeed = FVector(Velocity.X, Velocity.Y, 0).Length();
+	return !GetCharacterMovement()->GetCurrentAcceleration().IsZero() && GroundSpeed > 3.f;
+}
+
 void AItTakesOneCharacter::ClockEvent()
 {
 	if (Controller != nullptr)
@@ -268,57 +307,4 @@ void AItTakesOneCharacter::ClockEvent()
 			SetActorLocation(PositionHistory[0]);
 		}
 	}
-}
-
-bool AItTakesOneCharacter::CanPerformAction(ECharacterActionStateEnum UpdatedAction)
-{
-	switch (CharacterActionState)
-	{
-	case ECharacterActionStateEnum::IDLE:
-		return true;
-		break;
-	case ECharacterActionStateEnum::MOVE:
-		if (UpdatedAction != ECharacterActionStateEnum::HAMMER)
-			return true;
-		break;
-	case ECharacterActionStateEnum::JUMP:
-		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
-			UpdatedAction == ECharacterActionStateEnum::MOVE)
-			return true;
-		break;
-	case ECharacterActionStateEnum::DASH:
-		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
-			UpdatedAction == ECharacterActionStateEnum::MOVE)
-			return true;
-	case ECharacterActionStateEnum::HAMMER:
-		return false;
-		break;
-	case ECharacterActionStateEnum::JET:
-		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
-			return true;
-		break;
-	case ECharacterActionStateEnum::GLIDE:
-		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
-			return true;
-		break;
-	}
-
-	return false;
-}
-
-void AItTakesOneCharacter::UpdateActionState(ECharacterActionStateEnum NewAction)
-{
-	if (NewAction == ECharacterActionStateEnum::MOVE || NewAction == ECharacterActionStateEnum::IDLE)
-	{
-		if (GetVelocity().Size() <= 0.1f)
-		{
-			CharacterActionState = ECharacterActionStateEnum::IDLE;
-		}
-		else
-		{
-			CharacterActionState = ECharacterActionStateEnum::MOVE;
-		}
-	}
-
-	CharacterActionState = NewAction;
 }

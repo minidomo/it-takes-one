@@ -2,6 +2,8 @@
 
 
 #include "ClockLandGameMode.h"
+
+#include "ItTakesOne/ItTakesOneCharacter.h"
 #include "ItTakesOne/Framework/MainGameInstance.h"
 
 AClockLandGameMode::AClockLandGameMode()
@@ -11,6 +13,15 @@ AClockLandGameMode::AClockLandGameMode()
 	if (PlayerControllerBPClass.Class)
 	{
 		PlayerControllerClass = PlayerControllerBPClass.Class;
+	}
+}
+
+void AClockLandGameMode::OnPlayerDied(ACharacter* Character, AController* Controller)
+{
+	Super::OnPlayerDied(Character, Controller);
+	if (const auto NewCharacter = Cast<AItTakesOneCharacter>(Controller->GetCharacter()))
+	{
+		NewCharacter->StartPositionRecording();
 	}
 }
 

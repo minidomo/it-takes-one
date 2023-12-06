@@ -111,5 +111,8 @@ void ASkyLandGameMode::SpawnCoreCrystal()
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	GetWorld()->SpawnActor<ACoreCrystal>(CoreCrystalClass, Location, FRotator::ZeroRotator, Params);
+	const auto BossLocation = BossCharacter->GetActorLocation();
+	const FRotator Rotation = (BossLocation - FVector(Location.X, Location.Y, BossLocation.Z)).Rotation();
+
+	GetWorld()->SpawnActor<ACoreCrystal>(CoreCrystalClass, Location, Rotation, Params);
 }

@@ -3,6 +3,7 @@
 
 #include "ButtonRespondActor.h"
 #include "ButtonActor.h"
+#include "Components/TextRenderComponent.h"
 #include "Engine/Engine.h"
 
 // Sets default values
@@ -14,6 +15,13 @@ AButtonRespondActor::AButtonRespondActor()
     RespondMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RespondMesh"));
     RootComponent = RespondMesh;
     
+    TextComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("TextComponent"));
+    TextComponent->SetupAttachment(RespondMesh); // Attach to your board mesh
+    TextComponent->SetVisibility(false);
+
+    TextComponent->SetText(FText::FromString("Backtrace To the Origin"));
+    TextComponent->SetTextRenderColor(FColor::White);
+    TextComponent->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 
     bIsElevating = false;
     CurrentElevationTime = 0.0f;
@@ -31,21 +39,23 @@ void AButtonRespondActor::BeginPlay()
 void AButtonRespondActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-    if (bIsElevating)
-    {
-        CurrentElevationTime += DeltaTime;
-        float Alpha = FMath::Clamp(CurrentElevationTime / TotalElevationTime, 0.0f, 1.0f);
-        FVector NewLocation = FMath::Lerp(OriginalLocation, TargetLocation, Alpha);
-        RespondMesh->SetWorldLocation(NewLocation);
-
-        if (Alpha >= 1.0f)
+   
+    if (IsPlane) {
+        if (bIsElevating)
         {
-            bIsElevating = false;
-            CurrentElevationTime = 0.0f;
+            CurrentElevationTime += DeltaTime;
+            float Alpha = FMath::Clamp(CurrentElevationTime / TotalElevationTime, 0.0f, 1.0f);
+            FVector NewLocation = FMath::Lerp(OriginalLocation, TargetLocation, Alpha);
+            RespondMesh->SetWorldLocation(NewLocation);
+
+            if (Alpha >= 1.0f)
+            {
+                bIsElevating = false;
+                CurrentElevationTime = 0.0f;
+            }
         }
     }
-
+   
     CheckButtons();
 }
 
@@ -59,8 +69,48 @@ void AButtonRespondActor::CheckButtons()
         }
     }
 
-    ElevatePlane();
+    if (IsPlane) {
+        ElevatePlane();
+    }
+    else if (IsSpawn) {
+        MakeVisible();
+    }
+    else if (IsBoard) {
+        ShowBoard();
+    }
+
 }
+void  AButtonRespondActor::MakeVisible() {
+    if (RootComponent && RootComponent->IsA(UStaticMeshComponent::StaticClass()))
+    {
+        
+        Cast<UStaticMeshComponent>(RootComponent)->SetVisibility(true);
+        SetActorHiddenInGame(false);
+        RespondMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    }
+}
+
+void  AButtonRespondActor::ShowBoard() {
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("showboard"));
+    }
+
+    if (RootComponent && RootComponent->IsA(UStaticMeshComponent::StaticClass()))
+    {
+
+        Cast<UStaticMeshComponent>(RootComponent)->SetVisibility(true);
+        SetActorHiddenInGame(false);
+        RespondMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    }
+
+    TextComponent->SetVisibility(true);
+    TextComponent->SetText(FText::FromString("Backtrace To the Origin"));
+}
+
+
+
+
 
 void AButtonRespondActor::ElevatePlane()
 {

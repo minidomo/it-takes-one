@@ -3,12 +3,10 @@
 #include "MainGameInstance.h"
 
 #include "ItTakesOne/Data/SaveGames/ContentSaveGame.h"
-#include "ItTakesOne/Data/SaveGames/SettingsSaveGame.h"
 #include "Kismet/GameplayStatics.h"
 
 UMainGameInstance::UMainGameInstance()
 {
-	SettingsSlotName = "Settings";
 	ContentSlotName = "Content";
 }
 
@@ -19,8 +17,6 @@ void UMainGameInstance::Init()
 
 	ContentData = Cast<UContentSaveGame>(
 		LoadOrCreateSaveGame(UContentSaveGame::StaticClass(), ContentSlotName));
-	SettingsData = Cast<USettingsSaveGame>(
-		LoadOrCreateSaveGame(USettingsSaveGame::StaticClass(), SettingsSlotName));
 
 	if (ContentData)
 	{
@@ -29,15 +25,6 @@ void UMainGameInstance::Init()
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s: issue loading %s.sav"), *GetName(), *ContentSlotName);
-	}
-
-	if (SettingsData)
-	{
-		UE_LOG(LogTemp, Display, TEXT("%s: loading %s.sav"), *GetName(), *SettingsSlotName);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s: issue loading %s.sav"), *GetName(), *SettingsSlotName);
 	}
 }
 
