@@ -45,7 +45,7 @@ void AButtonActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		if (GEngine)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("button pressed"));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("button pressed"));
 		}
 
 		if (!bIsActivated)
@@ -61,7 +61,7 @@ void AButtonActor::DeactivateButton()
 {
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("button deactivate"));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("button deactivate"));
 	}
 
 	bIsActivated = false;

@@ -108,13 +108,18 @@ void AButtonRespondActor::ElevatePlane()
 {
     if (!bIsElevating)
     {
+        OriginalLocation = RespondMesh->GetComponentLocation();
+        if (OriginalLocation.Z<800) {
+            bShouldElevate = true;
+        }
+        else {
+            bShouldElevate = false;
+        }
         // Update the target location based on the current elevation direction
         if (bShouldElevate) {
-            OriginalLocation = RespondMesh->GetComponentLocation();
             TargetLocation = OriginalLocation + FVector(0, 0, TargetElevation);
         }
         else {
-            OriginalLocation = RespondMesh->GetComponentLocation();
             TargetLocation = OriginalLocation - FVector(0, 0, TargetElevation);
         
         }
@@ -137,7 +142,7 @@ void  AButtonRespondActor::MakeVisible() {
 void  AButtonRespondActor::ShowBoard() {
     if (GEngine)
     {
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("showboard"));
+        //GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("showboard"));
     }
 
     if (RootComponent && RootComponent->IsA(UStaticMeshComponent::StaticClass()))
