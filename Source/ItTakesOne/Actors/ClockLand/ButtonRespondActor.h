@@ -46,6 +46,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup", SaveGame)
 		bool IsBoard;
 
+	bool bShouldElevate;
+
+	void ToggleElevation();
+
 	void ElevatePlane();
 
 	void MakeVisible();

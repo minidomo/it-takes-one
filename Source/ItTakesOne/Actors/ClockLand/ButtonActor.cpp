@@ -22,7 +22,6 @@ AButtonActor::AButtonActor()
 	ButtonMesh->SetupAttachment(RootComponent); // Attaching the mesh to the root component
 
 	bIsActivated = false;
-
 }
 
 // Called when the game starts or when spawned
@@ -52,6 +51,7 @@ void AButtonActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		if (!bIsActivated)
 		{
 			bIsActivated = true;
+
 			GetWorldTimerManager().SetTimer(TimerHandle, this, &AButtonActor::DeactivateButton, 1.0f, false);
 		}
 	}
@@ -66,3 +66,4 @@ void AButtonActor::DeactivateButton()
 
 	bIsActivated = false;
 }
+

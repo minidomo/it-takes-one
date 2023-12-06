@@ -3,7 +3,9 @@
 
 #include "ButtonRespondActor.h"
 #include "ButtonActor.h"
+#include "../LevelTransitionActor.h"
 #include "Components/TextRenderComponent.h"
+#include "EngineUtils.h"
 #include "Engine/Engine.h"
 
 // Sets default values
@@ -25,7 +27,11 @@ AButtonRespondActor::AButtonRespondActor()
 
     bIsElevating = false;
     CurrentElevationTime = 0.0f;
-    TargetElevation = 1000.0f; // Adjust as necessary
+    TargetElevation = 1000.0f;
+
+    OriginalLocation = RespondMesh->GetComponentLocation();
+    TargetLocation = OriginalLocation + FVector(0, 0, TargetElevation);
+    bShouldElevate = true; // Start with elevating
 }
 
 // Called when the game starts or when spawned
@@ -40,9 +46,9 @@ void AButtonRespondActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
    
-    if (IsPlane) {
-        if (bIsElevating)
-        {
+    if (IsPlane)
+    {
+        if (bIsElevating) {
             CurrentElevationTime += DeltaTime;
             float Alpha = FMath::Clamp(CurrentElevationTime / TotalElevationTime, 0.0f, 1.0f);
             FVector NewLocation = FMath::Lerp(OriginalLocation, TargetLocation, Alpha);
@@ -52,7 +58,18 @@ void AButtonRespondActor::Tick(float DeltaTime)
             {
                 bIsElevating = false;
                 CurrentElevationTime = 0.0f;
+
+                // Toggle the direction of elevation only after completing the current movement
+                bShouldElevate = !bShouldElevate;
             }
+        }
+        
+        if (ConnectedButtons.Num() > 0 && ConnectedButtons[0])
+        {
+            FVector CurrentButtonLocation = ConnectedButtons[0]->GetActorLocation();
+            FVector NewButtonLocation = FVector(CurrentButtonLocation.X, CurrentButtonLocation.Y, GetActorLocation().Z-60);
+
+            ConnectedButtons[0]->SetActorLocation(NewButtonLocation);
         }
     }
    
@@ -61,6 +78,8 @@ void AButtonRespondActor::Tick(float DeltaTime)
 
 void AButtonRespondActor::CheckButtons()
 {
+
+
     for (AButtonActor* Button : ConnectedButtons)
     {
         if (Button && !Button->bIsActivated)
@@ -70,6 +89,10 @@ void AButtonRespondActor::CheckButtons()
     }
 
     if (IsPlane) {
+        if (bIsElevating)
+        {
+            return;
+        }
         ElevatePlane();
     }
     else if (IsSpawn) {
@@ -78,8 +101,29 @@ void AButtonRespondActor::CheckButtons()
     else if (IsBoard) {
         ShowBoard();
     }
-
 }
+
+
+void AButtonRespondActor::ElevatePlane()
+{
+    if (!bIsElevating)
+    {
+        // Update the target location based on the current elevation direction
+        if (bShouldElevate) {
+            OriginalLocation = RespondMesh->GetComponentLocation();
+            TargetLocation = OriginalLocation + FVector(0, 0, TargetElevation);
+        }
+        else {
+            OriginalLocation = RespondMesh->GetComponentLocation();
+            TargetLocation = OriginalLocation - FVector(0, 0, TargetElevation);
+        
+        }
+
+        bIsElevating = true;
+    }
+}
+
+
 void  AButtonRespondActor::MakeVisible() {
     if (RootComponent && RootComponent->IsA(UStaticMeshComponent::StaticClass()))
     {
@@ -106,24 +150,30 @@ void  AButtonRespondActor::ShowBoard() {
 
     TextComponent->SetVisibility(true);
     TextComponent->SetText(FText::FromString("Backtrace To the Origin"));
-}
 
-
-
-
-
-void AButtonRespondActor::ElevatePlane()
-{
-    if (!bIsElevating)
+    for (TActorIterator<ALevelTransitionActor> It(GetWorld()); It; ++It)
     {
-        if (GEngine)
+        ALevelTransitionActor* LevelTransitionActor = *It;
+        if (LevelTransitionActor)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("elevateplane"));
+            // Make sure we're working with the correct actor if there are any filters or checks to be done.
+
+            // Make the LevelTransitionActor visible.
+            LevelTransitionActor->SetActorHiddenInGame(false);
+            LevelTransitionActor->SetActorEnableCollision(true);
+            LevelTransitionActor->SetActorTickEnabled(true); // If you want the actor to start ticking (if it has any ticking logic that needs to run)
+
+            // Optionally, if the LevelTransitionActor has any specific components that also need to be made visible:
+            UStaticMeshComponent* MeshComponent = LevelTransitionActor->FindComponentByClass<UStaticMeshComponent>();
+            if (MeshComponent)
+            {
+                MeshComponent->SetVisibility(true);
+                MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            }
+
+            // Assuming there is only one LevelTransitionActor, we can break the loop after making it visible.
+            break;
         }
-
-        bIsElevating = true;
-        OriginalLocation = RespondMesh->GetComponentLocation();
-        TargetLocation = OriginalLocation + FVector(0, 0, TargetElevation);
     }
-
 }
+
