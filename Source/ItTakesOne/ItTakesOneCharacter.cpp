@@ -117,6 +117,21 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 	}
 }
 
+void AItTakesOneCharacter::DashEvent()
+{
+	if (bHammer || !CanDash) { return; }
+
+	FVector DashVelocity = GetActorForwardVector() * 100.f;
+	LaunchCharacter(DashVelocity, false, false);
+	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AItTakesOneCharacter::EndDashEvent, 5.f, false);
+}
+
+void AItTakesOneCharacter::EndDashEvent()
+{
+	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AItTakesOneCharacter::ResetAction, DashCoolDown, false);
+}
+
+
 void AItTakesOneCharacter::HammerEvent()
 {
 	// if (CanPerformAction(ECharacterActionStateEnum::HAMMER))
@@ -178,7 +193,6 @@ void AItTakesOneCharacter::JetEvent()
 	// }
 }
 
-
 void AItTakesOneCharacter::ResetAction()
 {
 	// UpdateActionState(ECharacterActionStateEnum::IDLE);
@@ -188,6 +202,7 @@ void AItTakesOneCharacter::ResetAction()
 		DetachEvent();
 		bHammer = false;
 	}
+	CanDash = true;
 }
 
 void AItTakesOneCharacter::GlideHoldEvent()
