@@ -26,7 +26,7 @@ public:
 
 	UPROPERTY(SaveGame)
 	bool bIsActivated;
-	
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,6 +34,11 @@ protected:
 
 private:
 	FTimerHandle TimerHandle;
+
+	float ButtonElevation = 0.f;
+	FVector InitialButtonLocation;
+	const float MaxElevation = 1000.f;
+
 
 public:	
 	// Called every frame

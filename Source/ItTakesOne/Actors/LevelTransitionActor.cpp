@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "GameModes/PlayableGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/Engine.h"
 #include "ItTakesOne/ItTakesOneCharacter.h"
 
 // Sets default values
@@ -43,6 +44,11 @@ void ALevelTransitionActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, 
 {
 	if (OtherActor && (OtherActor != this))
 	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("level transition"));
+		}
+
 		// Assuming your player class is called AYourPlayerClass, replace it with your actual player class
 		if (OtherActor->IsA(AItTakesOneCharacter::StaticClass()))
 		{
