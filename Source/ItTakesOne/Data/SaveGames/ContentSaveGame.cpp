@@ -2,6 +2,7 @@
 
 #include "ContentSaveGame.h"
 
+#include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "ItTakesOne/Data/SaveGameArchive.h"
 
@@ -41,4 +42,26 @@ bool UContentSaveGame::SaveActor(AActor* Actor, FActorSaveData& Data)
 	FSaveGameArchive Ar(MemWriter);
 	Actor->Serialize(Ar);
 	return true;
+}
+
+FActorSaveData* UContentSaveGame::FindData(TArray<FActorSaveData>& ActorData, const AActor* Actor)
+{
+	for (auto& Data : ActorData)
+	{
+		if (Data.Name == Actor->GetFName())
+		{
+			return &Data;
+		}
+
+		// check for classes that only have one instance
+		if (Data.Class == Actor->GetClass())
+		{
+			if (Actor->IsA(AGameStateBase::StaticClass()) || Actor->IsA(APlayerState::StaticClass()))
+			{
+				return &Data;
+			}
+		}
+	}
+
+	return nullptr;
 }

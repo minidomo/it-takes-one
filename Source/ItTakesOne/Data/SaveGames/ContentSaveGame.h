@@ -78,4 +78,6 @@ public:
 
 	bool LoadActor(AActor* Actor, FActorSaveData& Data);
 	bool SaveActor(AActor* Actor, FActorSaveData& Data);
+
+	FActorSaveData* FindData(TArray<FActorSaveData>& ActorData, const AActor* Actor);
 };
