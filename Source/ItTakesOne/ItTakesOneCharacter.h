@@ -69,14 +69,14 @@ public:
 	//place the footstep for the clock
 	void PlaceFootstepDecals();
 
-	UFUNCTION(BlueprintCallable)
-	bool CanPerformAction(ECharacterActionStateEnum UpdatedAction);
+	// UFUNCTION(BlueprintCallable)
+	// bool CanPerformAction(ECharacterActionStateEnum UpdatedAction);
+	//
+	// UFUNCTION(BlueprintCallable)
+	// void UpdateActionState(ECharacterActionStateEnum NewAction);
 
-	UFUNCTION(BlueprintCallable)
-	void UpdateActionState(ECharacterActionStateEnum NewAction);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ECharacterActionStateEnum CharacterActionState;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	// ECharacterActionStateEnum CharacterActionState;
 
 
 public:

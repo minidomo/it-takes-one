@@ -74,8 +74,8 @@ void AItTakesOneCharacter::Destroyed()
 
 void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 {
-	if (CanPerformAction(ECharacterActionStateEnum::MOVE))
-	{
+	// if (CanPerformAction(ECharacterActionStateEnum::MOVE))
+	// {
 		// input is a Vector2D
 		FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -95,10 +95,10 @@ void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 			AddMovementInput(ForwardDirection, MovementVector.Y);
 			AddMovementInput(RightDirection, MovementVector.X);
 
-			UpdateActionState(ECharacterActionStateEnum::MOVE);
+			// UpdateActionState(ECharacterActionStateEnum::MOVE);
 			GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 0.01f, false);
 		}
-	}
+	// }
 }
 
 void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
@@ -116,11 +116,11 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 
 void AItTakesOneCharacter::HammerEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::HAMMER))
-	{
+	// if (CanPerformAction(ECharacterActionStateEnum::HAMMER))
+	// {
 		IsHammer = true;
 		AttachEvent();
-		UpdateActionState(ECharacterActionStateEnum::HAMMER);
+		// UpdateActionState(ECharacterActionStateEnum::HAMMER);
 		if (Controller != nullptr)
 		{
 			if (GEngine)
@@ -164,22 +164,22 @@ void AItTakesOneCharacter::HammerEvent()
 			}
 		}
 		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 3.3f, false);
-	}
+	// }
 }
 
 void AItTakesOneCharacter::JetEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::JET)) {
-		UpdateActionState(ECharacterActionStateEnum::JET);
+	// if (CanPerformAction(ECharacterActionStateEnum::JET)) {
+	// 	UpdateActionState(ECharacterActionStateEnum::JET);
 		LaunchCharacter(FVector(0, 0, 100), false, false);
-	}
+	// }
 	
 }
 
 
 void AItTakesOneCharacter::ResetAction()
 {
-	UpdateActionState(ECharacterActionStateEnum::IDLE);
+	// UpdateActionState(ECharacterActionStateEnum::IDLE);
 
 	if (IsHammer)
 	{
@@ -190,9 +190,9 @@ void AItTakesOneCharacter::ResetAction()
 
 void AItTakesOneCharacter::GlideHoldEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::GLIDE)) {
-
-		UpdateActionState(ECharacterActionStateEnum::GLIDE);
+	// if (CanPerformAction(ECharacterActionStateEnum::GLIDE)) {
+	//
+	// 	UpdateActionState(ECharacterActionStateEnum::GLIDE);
 
 		const bool Falling = GetCharacterMovement()->Velocity.Z < 0;
 
@@ -204,7 +204,7 @@ void AItTakesOneCharacter::GlideHoldEvent()
 		{
 			GetCharacterMovement()->GravityScale = InitialGravityScale;
 		}
-	}
+	// }
 	
 }
 
@@ -270,55 +270,55 @@ void AItTakesOneCharacter::ClockEvent()
 	}
 }
 
-bool AItTakesOneCharacter::CanPerformAction(ECharacterActionStateEnum UpdatedAction)
-{
-	switch (CharacterActionState)
-	{
-	case ECharacterActionStateEnum::IDLE:
-		return true;
-		break;
-	case ECharacterActionStateEnum::MOVE:
-		if (UpdatedAction != ECharacterActionStateEnum::HAMMER)
-			return true;
-		break;
-	case ECharacterActionStateEnum::JUMP:
-		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
-			UpdatedAction == ECharacterActionStateEnum::MOVE)
-			return true;
-		break;
-	case ECharacterActionStateEnum::DASH:
-		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
-			UpdatedAction == ECharacterActionStateEnum::MOVE)
-			return true;
-	case ECharacterActionStateEnum::HAMMER:
-		return false;
-		break;
-	case ECharacterActionStateEnum::JET:
-		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
-			return true;
-		break;
-	case ECharacterActionStateEnum::GLIDE:
-		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
-			return true;
-		break;
-	}
-
-	return false;
-}
-
-void AItTakesOneCharacter::UpdateActionState(ECharacterActionStateEnum NewAction)
-{
-	if (NewAction == ECharacterActionStateEnum::MOVE || NewAction == ECharacterActionStateEnum::IDLE)
-	{
-		if (GetVelocity().Size() <= 0.1f)
-		{
-			CharacterActionState = ECharacterActionStateEnum::IDLE;
-		}
-		else
-		{
-			CharacterActionState = ECharacterActionStateEnum::MOVE;
-		}
-	}
-
-	CharacterActionState = NewAction;
-}
+// bool AItTakesOneCharacter::CanPerformAction(ECharacterActionStateEnum UpdatedAction)
+// {
+// 	switch (CharacterActionState)
+// 	{
+// 	case ECharacterActionStateEnum::IDLE:
+// 		return true;
+// 		break;
+// 	case ECharacterActionStateEnum::MOVE:
+// 		if (UpdatedAction != ECharacterActionStateEnum::HAMMER)
+// 			return true;
+// 		break;
+// 	case ECharacterActionStateEnum::JUMP:
+// 		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
+// 			UpdatedAction == ECharacterActionStateEnum::MOVE)
+// 			return true;
+// 		break;
+// 	case ECharacterActionStateEnum::DASH:
+// 		if (UpdatedAction == ECharacterActionStateEnum::IDLE ||
+// 			UpdatedAction == ECharacterActionStateEnum::MOVE)
+// 			return true;
+// 	case ECharacterActionStateEnum::HAMMER:
+// 		return false;
+// 		break;
+// 	case ECharacterActionStateEnum::JET:
+// 		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
+// 			return true;
+// 		break;
+// 	case ECharacterActionStateEnum::GLIDE:
+// 		if (UpdatedAction != ECharacterActionStateEnum::JUMP)
+// 			return true;
+// 		break;
+// 	}
+//
+// 	return false;
+// }
+//
+// void AItTakesOneCharacter::UpdateActionState(ECharacterActionStateEnum NewAction)
+// {
+// 	if (NewAction == ECharacterActionStateEnum::MOVE || NewAction == ECharacterActionStateEnum::IDLE)
+// 	{
+// 		if (GetVelocity().Size() <= 0.1f)
+// 		{
+// 			CharacterActionState = ECharacterActionStateEnum::IDLE;
+// 		}
+// 		else
+// 		{
+// 			CharacterActionState = ECharacterActionStateEnum::MOVE;
+// 		}
+// 	}
+//
+// 	CharacterActionState = NewAction;
+// }
