@@ -40,8 +40,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void JumpEvent();
 
-	UFUNCTION(BlueprintImplementableEvent)
 	void DashEvent();
+	void EndDashEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void PauseEvent();
@@ -98,6 +98,10 @@ private:
 
 	FTimerHandle HammerTimerHandle;
 	FTimerHandle DestroyTimerHandle;
+
+	FTimerHandle DashTimerHandle;
+	float DashCoolDown = 15.f;
+	bool CanDash = true;
 
 	bool IsHammer = false;
 
