@@ -138,7 +138,7 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 
 void AItTakesOneCharacter::JumpEvent()
 {
-	if (!FMath::IsNearlyZero(GetCharacterMovement()->Velocity.Z)) { return; }
+	if (!FMath::IsNearlyZero(GetCharacterMovement()->Velocity.Z) || bHammer) { return; }
 
 	bJump = true;
 	Jump();
