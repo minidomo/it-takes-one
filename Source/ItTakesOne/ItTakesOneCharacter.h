@@ -75,8 +75,7 @@ public:
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	// ECharacterActionStateEnum CharacterActionState;
 
-	UFUNCTION(BlueprintCallable)
-	void SetDash(bool bNewDash);
+	bool IsFallingZ();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -84,21 +83,17 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsDash() const { return bDash; }
-
-	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsHammer() const { return bHammer; }
-
-	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsJet() const { return bJet; }
-
-	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsGlide() const { return bGlide; }
+	FORCEINLINE bool IsJump() const { return bJump; }
 
 	bool IsMoving();
 
 	virtual void Destroyed() override;
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 private:
 	float InitialGravityScale;
@@ -116,7 +111,7 @@ private:
 	FTimerHandle DashTimerHandle;
 	FTimerHandle DashCoolDownHandle;
 	float DashCoolDown = 15.f;
-	bool CanDash = true;
+	bool DashAvailable = true;
 
 protected:
 	// Decal material for the footstep
@@ -142,10 +137,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float DestroyAnimationTime;
 
+	UPROPERTY(EditAnywhere)
+	float JetMagnitude;
+
 	bool bHammer;
 	bool bDash;
 	bool bGlide;
 	bool bJet;
+	bool bJump;
 
 	virtual void BeginPlay() override;
 };

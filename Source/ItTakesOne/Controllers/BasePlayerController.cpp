@@ -23,6 +23,7 @@ void ABasePlayerController::SetupInputComponent() {
     if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent)) {
         EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABasePlayerController::OnMovePressed);
         EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABasePlayerController::OnJumpPressed);
+        EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABasePlayerController::OnJumpComplete);
         EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABasePlayerController::OnLook);
         EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &ABasePlayerController::OnDashPressed);
         EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ABasePlayerController::OnPausePressed);
@@ -47,6 +48,14 @@ void ABasePlayerController::OnJumpPressed() {
     AItTakesOneCharacter* character = Cast<AItTakesOneCharacter>(this->GetCharacter());
     if (character) {
         character->JumpEvent();
+    }
+}
+
+void ABasePlayerController::OnJumpComplete()
+{
+    AItTakesOneCharacter* character = Cast<AItTakesOneCharacter>(this->GetCharacter());
+    if (character) {
+        character->StopJumping();
     }
 }
 

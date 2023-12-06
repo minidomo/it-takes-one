@@ -37,13 +37,22 @@ protected:
 	bool bIdle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bFalling;
+	bool bFallingZ;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bDash;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bHammer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bJet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bGlide;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bJump;
 
 public:
 	virtual void NativeInitializeAnimation() override;

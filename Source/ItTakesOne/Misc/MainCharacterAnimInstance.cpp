@@ -29,12 +29,15 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	Velocity = CharacterMovement->Velocity;
 	GroundSpeed = FVector(Velocity.X, Velocity.Y, 0).Length();
-	bFalling = CharacterMovement->IsFalling();
 
 	TArray Statuses = {
 		bMoving = Character->IsMoving(),
 		bDash = Character->IsDash(),
 		bHammer = Character->IsHammer(),
+		bJet = Character->IsJet(),
+		bGlide = Character->IsGlide(),
+		bJump = Character->IsJump(),
+		bFallingZ = Character->IsFallingZ(),
 	};
 
 	bIdle = true;

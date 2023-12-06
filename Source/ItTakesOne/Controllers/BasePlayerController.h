@@ -55,6 +55,7 @@ protected:
 	void OnLook(const FInputActionValue& Value);
 
 	void OnJumpPressed();
+	void OnJumpComplete();
 	void OnDashPressed();
 	void OnPausePressed();
 

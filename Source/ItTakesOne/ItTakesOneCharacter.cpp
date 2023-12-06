@@ -61,6 +61,7 @@ AItTakesOneCharacter::AItTakesOneCharacter()
 	DashAnimationTime = .5f;
 	HammerAnimationTime = 3.35f;
 	DestroyAnimationTime = 1.4f;
+	JetMagnitude = 100.f;
 }
 
 
@@ -74,6 +75,27 @@ void AItTakesOneCharacter::Destroyed()
 	{
 		GameMode->OnPlayerDiedDelegate.Broadcast(this, ControllerCopy);
 	}
+}
+
+void AItTakesOneCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bJet)
+	{
+		bJet = !IsFallingZ();
+	}
+
+	if (bJump)
+	{
+		bJump = !IsFallingZ();
+	}
+}
+
+void AItTakesOneCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+	bJet = bGlide = bJump = false;
 }
 
 void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
@@ -116,14 +138,17 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 
 void AItTakesOneCharacter::JumpEvent()
 {
+	if (!FMath::IsNearlyZero(GetCharacterMovement()->Velocity.Z)) { return; }
+
+	bJump = true;
 	Jump();
 }
 
 void AItTakesOneCharacter::DashEvent()
 {
-	if (bHammer || !CanDash) { return; }
+	if (bHammer || !DashAvailable || !IsMoving() || bJet || bGlide) { return; }
 
-	CanDash = false;
+	DashAvailable = false;
 	bDash = true;
 	FVector DashVelocity = GetActorForwardVector() * DashMagnitude;
 	LaunchCharacter(DashVelocity, false, false);
@@ -131,12 +156,12 @@ void AItTakesOneCharacter::DashEvent()
 	// needs to be different timers because using SetTimer on a timer that is currently being used will result in the
 	// first one getting cleared
 	GetWorldTimerManager().SetTimer(DashTimerHandle, [&] { bDash = false; }, DashAnimationTime, false);
-	GetWorldTimerManager().SetTimer(DashCoolDownHandle, [&] { CanDash = true; }, DashCoolDown, false);
+	GetWorldTimerManager().SetTimer(DashCoolDownHandle, [&] { DashAvailable = true; }, DashCoolDown, false);
 }
 
 void AItTakesOneCharacter::HammerEvent()
 {
-	if (IsMoving() || bDash || bHammer) { return; }
+	if (!GetCharacterMovement()->Velocity.IsZero() || bDash || bHammer) { return; }
 
 	bHammer = true;
 	AttachEvent();
@@ -192,15 +217,15 @@ void AItTakesOneCharacter::HammerEvent()
 
 void AItTakesOneCharacter::JetEvent()
 {
-	LaunchCharacter(FVector(0, 0, 100), false, false);
+	bJet = true;
+	LaunchCharacter(FVector(0, 0, JetMagnitude), false, false);
 }
 
 void AItTakesOneCharacter::GlideHoldEvent()
 {
-	const bool Falling = GetCharacterMovement()->Velocity.Z < 0;
-
-	if (Falling)
+	if (IsFallingZ())
 	{
+		bGlide = true;
 		GetCharacterMovement()->GravityScale = GlideGravityScale;
 	}
 	else
@@ -211,6 +236,7 @@ void AItTakesOneCharacter::GlideHoldEvent()
 
 void AItTakesOneCharacter::GlideEndEvent()
 {
+	bGlide = false;
 	GetCharacterMovement()->GravityScale = InitialGravityScale;
 }
 
@@ -254,9 +280,9 @@ void AItTakesOneCharacter::PlaceFootstepDecals()
 	}
 }
 
-void AItTakesOneCharacter::SetDash(bool bNewDash)
+bool AItTakesOneCharacter::IsFallingZ()
 {
-	bDash = bNewDash;
+	return GetCharacterMovement()->Velocity.Z < 0;
 }
 
 bool AItTakesOneCharacter::IsMoving()
