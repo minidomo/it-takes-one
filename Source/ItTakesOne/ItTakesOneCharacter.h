@@ -8,7 +8,8 @@
 #include "ItTakesOneCharacter.generated.h"
 
 UENUM(BlueprintType)
-enum class ECharacterActionStateEnum : uint8 {
+enum class ECharacterActionStateEnum : uint8
+{
 	IDLE UMETA(DisplayName = "Idling"),
 	MOVE UMETA(DisplayName = "Moving"),
 	DASH UMETA(DisplayName = "Dashing"),
@@ -78,12 +79,26 @@ public:
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	// ECharacterActionStateEnum CharacterActionState;
 
-
+	UFUNCTION(BlueprintCallable)
+	void SetDash(bool bNewDash);
+	
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsDash() const { return bDash; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsHammer() const { return bHammer; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsJet() const { return bJet; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsGlide() const { return bGlide; }
 
 	virtual void Destroyed() override;
 
@@ -99,8 +114,10 @@ private:
 	FTimerHandle HammerTimerHandle;
 	FTimerHandle DestroyTimerHandle;
 
-	bool IsHammer = false;
-
+	bool bHammer;
+	bool bDash;
+	bool bGlide;
+	bool bJet;
 
 protected:
 	// Decal material for the footstep
