@@ -14,5 +14,9 @@ class ITTAKESONE_API AClockLandGameMode : public APlayableGameModeBase
 public:
 	AClockLandGameMode();
 
+protected:
+	virtual void OnPlayerDied(ACharacter* Character, AController* Controller) override;
+	
+public:
 	virtual FPlayableWorldSaveData* GetPlayableWorldSaveData() override;
 };

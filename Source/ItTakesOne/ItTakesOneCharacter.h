@@ -7,18 +7,6 @@
 #include "InputActionValue.h"
 #include "ItTakesOneCharacter.generated.h"
 
-UENUM(BlueprintType)
-enum class ECharacterActionStateEnum : uint8
-{
-	IDLE UMETA(DisplayName = "Idling"),
-	MOVE UMETA(DisplayName = "Moving"),
-	DASH UMETA(DisplayName = "Dashing"),
-	JUMP UMETA(DisplayName = "Jumping"),
-	HAMMER UMETA(DisplayName = "Hammering"),
-	JET UMETA(DisplayName = "Jet"),
-	GLIDE UMETA(DisplayName = "Gliding")
-};
-
 UCLASS(config=Game)
 class AItTakesOneCharacter : public ACharacter
 {
@@ -66,15 +54,6 @@ public:
 	//place the footstep for the clock
 	void PlaceFootstepDecals();
 
-	// UFUNCTION(BlueprintCallable)
-	// bool CanPerformAction(ECharacterActionStateEnum UpdatedAction);
-	//
-	// UFUNCTION(BlueprintCallable)
-	// void UpdateActionState(ECharacterActionStateEnum NewAction);
-
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	// ECharacterActionStateEnum CharacterActionState;
-
 	bool IsFallingZ();
 
 public:
@@ -110,7 +89,7 @@ private:
 
 	FTimerHandle DashTimerHandle;
 	FTimerHandle DashCoolDownHandle;
-	float DashCoolDown = 15.f;
+	float DashCoolDown = 5.f;
 	bool DashAvailable = true;
 
 protected:

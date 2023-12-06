@@ -7,10 +7,11 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SceneComponent.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "ClockHandActor.generated.h"
 
 UCLASS()
-class ITTAKESONE_API AClockHandActor : public AActor
+class ITTAKESONE_API AClockHandActor : public AActor, public ISavableActorInterface
 {
     GENERATED_BODY()
 
@@ -37,7 +38,7 @@ public:
         USceneComponent* PivotComponent;
 
     // Rotation speed in degrees per second
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ClockHand")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ClockHand", SaveGame)
         float RotationSpeed;
 
     UFUNCTION()
