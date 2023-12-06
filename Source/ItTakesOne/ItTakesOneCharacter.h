@@ -7,17 +7,6 @@
 #include "InputActionValue.h"
 #include "ItTakesOneCharacter.generated.h"
 
-UENUM(BlueprintType)
-enum class ECharacterActionStateEnum : uint8 {
-	IDLE UMETA(DisplayName = "Idling"),
-	MOVE UMETA(DisplayName = "Moving"),
-	DASH UMETA(DisplayName = "Dashing"),
-	JUMP UMETA(DisplayName = "Jumping"),
-	HAMMER UMETA(DisplayName = "Hammering"),
-	JET UMETA(DisplayName = "Jet"),
-	GLIDE UMETA(DisplayName = "Gliding")
-};
-
 UCLASS(config=Game)
 class AItTakesOneCharacter : public ACharacter
 {
@@ -37,10 +26,8 @@ public:
 	void MoveEvent(const FInputActionValue& Value);
 	void LookEvent(const FInputActionValue& Value);
 
-	UFUNCTION(BlueprintImplementableEvent)
 	void JumpEvent();
 
-	UFUNCTION(BlueprintImplementableEvent)
 	void DashEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -62,22 +49,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void DetachEvent();
 
-	void ResetAction();
-
 	void ClockEvent();
 
 	//place the footstep for the clock
 	void PlaceFootstepDecals();
 
-	UFUNCTION(BlueprintCallable)
-	bool CanPerformAction(ECharacterActionStateEnum UpdatedAction);
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateActionState(ECharacterActionStateEnum NewAction);
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ECharacterActionStateEnum CharacterActionState;
-
+	bool IsFallingZ();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -85,7 +62,17 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	FORCEINLINE bool IsDash() const { return bDash; }
+	FORCEINLINE bool IsHammer() const { return bHammer; }
+	FORCEINLINE bool IsJet() const { return bJet; }
+	FORCEINLINE bool IsGlide() const { return bGlide; }
+	FORCEINLINE bool IsJump() const { return bJump; }
+
+	bool IsMoving();
+
 	virtual void Destroyed() override;
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void Landed(const FHitResult& Hit) override;
 
 private:
 	float InitialGravityScale;
@@ -97,10 +84,13 @@ private:
 	void UpdatePositionHistory();
 
 	FTimerHandle HammerTimerHandle;
+	FTimerHandle HammerCoolDownHandle;
 	FTimerHandle DestroyTimerHandle;
 
-	bool IsHammer = false;
-
+	FTimerHandle DashTimerHandle;
+	FTimerHandle DashCoolDownHandle;
+	float DashCoolDown = 5.f;
+	bool DashAvailable = true;
 
 protected:
 	// Decal material for the footstep
@@ -113,6 +103,27 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Glide)
 	float GlideGravityScale;
+
+	UPROPERTY(EditAnywhere)
+	float DashAnimationTime;
+
+	UPROPERTY(EditAnywhere)
+	float DashMagnitude;
+
+	UPROPERTY(EditAnywhere)
+	float HammerAnimationTime;
+
+	UPROPERTY(EditAnywhere)
+	float DestroyAnimationTime;
+
+	UPROPERTY(EditAnywhere)
+	float JetMagnitude;
+
+	bool bHammer;
+	bool bDash;
+	bool bGlide;
+	bool bJet;
+	bool bJump;
 
 	virtual void BeginPlay() override;
 };

@@ -149,8 +149,8 @@ void APlayableGameModeBase::LoadSaveGame()
 				Actor->Destroy();
 			}
 
-			UE_LOG(LogTemp, Display, TEXT("%s: %s | %d"), *GetActorNameOrLabel(), *Actor->GetActorNameOrLabel(),
-			       !!Data);
+			// UE_LOG(LogTemp, Display, TEXT("%s: %s | %d"), *GetActorNameOrLabel(), *Actor->GetActorNameOrLabel(),
+			//        !!Data);
 		}
 	}
 
@@ -178,7 +178,7 @@ void APlayableGameModeBase::LoadSaveGame()
 				       *Data.Name.ToString());
 			}
 
-			UE_LOG(LogTemp, Display, TEXT("%s: spawn %s | %d"), *GetActorNameOrLabel(), *Data.Name.ToString(), !!Actor);
+			// UE_LOG(LogTemp, Display, TEXT("%s: spawn %s | %d"), *GetActorNameOrLabel(), *Data.Name.ToString(), !!Actor);
 		}
 	}
 }

@@ -6,6 +6,9 @@
 *.sln.*
 *.DotSettings.user
 *.blend1
+Plugins/amd
+Plugins/nvidia
+Plugins/XeSS
 
 # Visual Studio 2015 user specific files
 .vs/
