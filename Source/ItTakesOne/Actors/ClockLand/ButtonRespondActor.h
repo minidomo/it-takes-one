@@ -10,7 +10,7 @@
 #include "ButtonRespondActor.generated.h"
 
 UCLASS()
-class ITTAKESONE_API AButtonRespondActor : public AActor
+class ITTAKESONE_API AButtonRespondActor : public AActor, public ISavableActorInterface
 {
 	GENERATED_BODY()
 	
@@ -39,11 +39,11 @@ public:
 
 	FTimerHandle DoorTimerHandle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup", SaveGame)
 		bool IsPlane;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup", SaveGame)
 		bool IsSpawn;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup", SaveGame)
 		bool IsBoard;
 
 	void ElevatePlane();
@@ -54,21 +54,26 @@ public:
 
 private:
 	// Flag to check if the plane has already elevated
+	UPROPERTY(SaveGame)
 	bool bIsElevating;
 
 	// Target elevation height
+	UPROPERTY(SaveGame)
 	float TargetElevation;
 
 	// Current elevation progress
+	UPROPERTY(SaveGame)
 	float CurrentElevationTime;
 
 	// Total time for elevation
 	const float TotalElevationTime = 3.0f; // 3 seconds
 
 	// Original location of the plane
+	UPROPERTY(SaveGame)
 	FVector OriginalLocation;
 
 	// Target location of the plane
+	UPROPERTY(SaveGame)
 	FVector TargetLocation;
 
 };

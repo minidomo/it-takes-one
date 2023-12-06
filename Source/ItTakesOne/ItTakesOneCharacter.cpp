@@ -169,11 +169,11 @@ void AItTakesOneCharacter::HammerEvent()
 
 void AItTakesOneCharacter::JetEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::JET)) {
+	if (CanPerformAction(ECharacterActionStateEnum::JET))
+	{
 		UpdateActionState(ECharacterActionStateEnum::JET);
 		LaunchCharacter(FVector(0, 0, 100), false, false);
 	}
-	
 }
 
 
@@ -190,8 +190,8 @@ void AItTakesOneCharacter::ResetAction()
 
 void AItTakesOneCharacter::GlideHoldEvent()
 {
-	if (CanPerformAction(ECharacterActionStateEnum::GLIDE)) {
-
+	if (CanPerformAction(ECharacterActionStateEnum::GLIDE))
+	{
 		UpdateActionState(ECharacterActionStateEnum::GLIDE);
 
 		const bool Falling = GetCharacterMovement()->Velocity.Z < 0;
@@ -205,7 +205,6 @@ void AItTakesOneCharacter::GlideHoldEvent()
 			GetCharacterMovement()->GravityScale = InitialGravityScale;
 		}
 	}
-	
 }
 
 void AItTakesOneCharacter::GlideEndEvent()

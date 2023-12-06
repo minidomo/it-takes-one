@@ -60,7 +60,7 @@ void AClockHandActor::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, 
                 GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Character may die"));
             }
             //character die
-            Character->Destroyed();
+            Character->Destroy();
         }
     
 }

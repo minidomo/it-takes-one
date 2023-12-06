@@ -6,10 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "ItTakesOne/Interfaces/SavableActorInterface.h"
 #include "ButtonActor.generated.h"
 
 UCLASS()
-class ITTAKESONE_API AButtonActor : public AActor
+class ITTAKESONE_API AButtonActor : public AActor, public ISavableActorInterface
 {
 	GENERATED_BODY()
 	
@@ -23,6 +24,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 		UBoxComponent* CollisionBox;
 
+	UPROPERTY(SaveGame)
 	bool bIsActivated;
 	
 
