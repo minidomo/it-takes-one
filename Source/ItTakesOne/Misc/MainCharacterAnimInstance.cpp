@@ -32,7 +32,7 @@ void UMainCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bFalling = CharacterMovement->IsFalling();
 
 	TArray Statuses = {
-		bMoving = !CharacterMovement->GetCurrentAcceleration().IsZero() && GroundSpeed > 3,
+		bMoving = Character->IsMoving(),
 		bDash = Character->IsDash(),
 		bHammer = Character->IsHammer(),
 	};

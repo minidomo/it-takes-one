@@ -38,11 +38,9 @@ public:
 	void MoveEvent(const FInputActionValue& Value);
 	void LookEvent(const FInputActionValue& Value);
 
-	UFUNCTION(BlueprintImplementableEvent)
 	void JumpEvent();
 
 	void DashEvent();
-	void EndDashEvent();
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void PauseEvent();
@@ -63,8 +61,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void DetachEvent();
 
-	void ResetAction();
-
 	void ClockEvent();
 
 	//place the footstep for the clock
@@ -81,7 +77,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetDash(bool bNewDash);
-	
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -100,6 +96,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsGlide() const { return bGlide; }
 
+	bool IsMoving();
+
 	virtual void Destroyed() override;
 
 private:
@@ -112,14 +110,11 @@ private:
 	void UpdatePositionHistory();
 
 	FTimerHandle HammerTimerHandle;
+	FTimerHandle HammerCoolDownHandle;
 	FTimerHandle DestroyTimerHandle;
 
-	bool bHammer;
-	bool bDash;
-	bool bGlide;
-	bool bJet;
-
 	FTimerHandle DashTimerHandle;
+	FTimerHandle DashCoolDownHandle;
 	float DashCoolDown = 15.f;
 	bool CanDash = true;
 
@@ -134,6 +129,23 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Glide)
 	float GlideGravityScale;
+
+	UPROPERTY(EditAnywhere)
+	float DashAnimationTime;
+
+	UPROPERTY(EditAnywhere)
+	float DashMagnitude;
+
+	UPROPERTY(EditAnywhere)
+	float HammerAnimationTime;
+
+	UPROPERTY(EditAnywhere)
+	float DestroyAnimationTime;
+
+	bool bHammer;
+	bool bDash;
+	bool bGlide;
+	bool bJet;
 
 	virtual void BeginPlay() override;
 };

@@ -57,6 +57,10 @@ AItTakesOneCharacter::AItTakesOneCharacter()
 
 	GlideGravityScale = .1;
 	GetCharacterMovement()->GravityScale = 1.75;
+	DashMagnitude = 1000.f;
+	DashAnimationTime = .5f;
+	HammerAnimationTime = 3.35f;
+	DestroyAnimationTime = 1.4f;
 }
 
 
@@ -74,12 +78,9 @@ void AItTakesOneCharacter::Destroyed()
 
 void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 {
-	// if (CanPerformAction(ECharacterActionStateEnum::MOVE))
-	// {
-	// input is a Vector2D
-
 	if (bHammer) { return; }
 
+	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
@@ -97,11 +98,7 @@ void AItTakesOneCharacter::MoveEvent(const FInputActionValue& Value)
 		// add movement
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
-
-		// UpdateActionState(ECharacterActionStateEnum::MOVE);
-		GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 0.01f, false);
 	}
-	// }
 }
 
 void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
@@ -117,100 +114,89 @@ void AItTakesOneCharacter::LookEvent(const FInputActionValue& Value)
 	}
 }
 
+void AItTakesOneCharacter::JumpEvent()
+{
+	Jump();
+}
+
 void AItTakesOneCharacter::DashEvent()
 {
 	if (bHammer || !CanDash) { return; }
 
-	FVector DashVelocity = GetActorForwardVector() * 100.f;
+	CanDash = false;
+	bDash = true;
+	FVector DashVelocity = GetActorForwardVector() * DashMagnitude;
 	LaunchCharacter(DashVelocity, false, false);
-	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AItTakesOneCharacter::EndDashEvent, 5.f, false);
-}
 
-void AItTakesOneCharacter::EndDashEvent()
-{
-	GetWorldTimerManager().SetTimer(DashTimerHandle, this, &AItTakesOneCharacter::ResetAction, DashCoolDown, false);
+	// needs to be different timers because using SetTimer on a timer that is currently being used will result in the
+	// first one getting cleared
+	GetWorldTimerManager().SetTimer(DashTimerHandle, [&] { bDash = false; }, DashAnimationTime, false);
+	GetWorldTimerManager().SetTimer(DashCoolDownHandle, [&] { CanDash = true; }, DashCoolDown, false);
 }
-
 
 void AItTakesOneCharacter::HammerEvent()
 {
-	// if (CanPerformAction(ECharacterActionStateEnum::HAMMER))
-	// {
+	if (IsMoving() || bDash || bHammer) { return; }
+
 	bHammer = true;
 	AttachEvent();
-	// UpdateActionState(ECharacterActionStateEnum::HAMMER);
-	if (Controller != nullptr)
+
+	if (GEngine)
 	{
-		if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Hammer"));
+	}
+
+	// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
+	// Array to hold all overlapping actors
+	TArray<AActor*> OverlappingActors;
+
+	// Get all actors that the character is currently overlapping
+	GetOverlappingActors(OverlappingActors);
+
+	// Loop through each actor
+	for (AActor* Actor : OverlappingActors)
+	{
+		if (Actor->IsA(ABreakableActor::StaticClass()))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Use Hammer"));
+			// Check if the actor is of the BreakableActor class
+			ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
+			GetWorldTimerManager().SetTimer(DestroyTimerHandle, [BreakableActor]()
+			{
+				BreakableActor->Destroy();
+			}, DestroyAnimationTime, false);
+
+			// destroy the first one found, so break afterwards
+			break;
 		}
 
-		// Destory the BreakableActor if the Character overlap with the collision box of the breakableactor
-		// Array to hold all overlapping actors
-		TArray<AActor*> OverlappingActors;
-
-		// Get all actors that the character is currently overlapping
-		GetOverlappingActors(OverlappingActors);
-
-		// Loop through each actor
-		for (AActor* Actor : OverlappingActors)
+		if (Actor->IsA(ATriggerActor::StaticClass()))
 		{
-			if (Actor->IsA(ABreakableActor::StaticClass()))
+			ATriggerActor* TActor = Cast<ATriggerActor>(Actor);
+			TActor->OnTriggerDelegate.Broadcast();
+			GetWorldTimerManager().SetTimer(DestroyTimerHandle, [TActor]()
 			{
-				// Check if the actor is of the BreakableActor class
-				ABreakableActor* BreakableActor = Cast<ABreakableActor>(Actor);
-				if (BreakableActor != nullptr)
-				{
-					GetWorldTimerManager().SetTimer(DestroyTimerHandle, [BreakableActor]()
-					{
-						BreakableActor->Destroy();
-					}, 1.3f, false);
-				}
-			}
+				TActor->Destroy();
+			}, DestroyAnimationTime, false);
 
-			if (Actor->IsA(ATriggerActor::StaticClass()))
-			{
-				ATriggerActor* TActor = Cast<ATriggerActor>(Actor);
-
-				TActor->OnTriggerDelegate.Broadcast();
-				GetWorldTimerManager().SetTimer(DestroyTimerHandle, [TActor]()
-				{
-					TActor->Destroy();
-				}, 1.3f, false);
-			}
+			// destroy the first one found, so break afterwards
+			break;
 		}
 	}
-	GetWorldTimerManager().SetTimer(HammerTimerHandle, this, &AItTakesOneCharacter::ResetAction, 3.3f, false);
-	// }
+
+	GetWorldTimerManager().SetTimer(HammerTimerHandle, [&]
+	{
+		DetachEvent();
+		bHammer = false;
+	}, HammerAnimationTime, false);
 }
 
 void AItTakesOneCharacter::JetEvent()
 {
-	// if (CanPerformAction(ECharacterActionStateEnum::JET)) {
-	// 	UpdateActionState(ECharacterActionStateEnum::JET);
 	LaunchCharacter(FVector(0, 0, 100), false, false);
-	// }
-}
-
-void AItTakesOneCharacter::ResetAction()
-{
-	// UpdateActionState(ECharacterActionStateEnum::IDLE);
-
-	if (bHammer)
-	{
-		DetachEvent();
-		bHammer = false;
-	}
-	CanDash = true;
 }
 
 void AItTakesOneCharacter::GlideHoldEvent()
 {
-	// if (CanPerformAction(ECharacterActionStateEnum::GLIDE)) {
-	//
-	// 	UpdateActionState(ECharacterActionStateEnum::GLIDE);
-
 	const bool Falling = GetCharacterMovement()->Velocity.Z < 0;
 
 	if (Falling)
@@ -221,7 +207,6 @@ void AItTakesOneCharacter::GlideHoldEvent()
 	{
 		GetCharacterMovement()->GravityScale = InitialGravityScale;
 	}
-	// }
 }
 
 void AItTakesOneCharacter::GlideEndEvent()
@@ -272,6 +257,13 @@ void AItTakesOneCharacter::PlaceFootstepDecals()
 void AItTakesOneCharacter::SetDash(bool bNewDash)
 {
 	bDash = bNewDash;
+}
+
+bool AItTakesOneCharacter::IsMoving()
+{
+	const FVector Velocity = GetCharacterMovement()->Velocity;
+	const float GroundSpeed = FVector(Velocity.X, Velocity.Y, 0).Length();
+	return !GetCharacterMovement()->GetCurrentAcceleration().IsZero() && GroundSpeed > 3.f;
 }
 
 void AItTakesOneCharacter::ClockEvent()
