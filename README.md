@@ -25,5 +25,5 @@ Download our [plugins](https://utexas.box.com/s/iwon8l7o1vdmyn2w0rzcv41lg1wy7tfc
 
 # Restart the Game
 
-- Binary: Delete the save files located at %appdata%/../Local/ItTakesOne
-- Unreal: Delete the save files located in the Saved/SaveGame
+- Binary: Delete the save files located at `%APPDATA%/../Local/ItTakesOne`
+- Unreal: Delete the save files located in the project directory's `Saved/SaveGame`
