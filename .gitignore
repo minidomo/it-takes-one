@@ -6,9 +6,13 @@
 *.sln.*
 *.DotSettings.user
 *.blend1
+
 Plugins/amd
 Plugins/nvidia
 Plugins/XeSS
+
+Content/STF
+Content/StorePropsCollection
 
 # Visual Studio 2015 user specific files
 .vs/
