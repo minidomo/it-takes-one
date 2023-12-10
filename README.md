@@ -11,7 +11,9 @@
 
 ## Building
 
-Add the following assets to the project
+Download our [plugins](https://utexas.box.com/s/iwon8l7o1vdmyn2w0rzcv41lg1wy7tfc), and extract them to the `Plugins` directory.
+
+Add the following assets to the project:
 - [Landscape Pro 2.0 Auto-Generated Material](https://www.unrealengine.com/marketplace/en-US/product/landscape-pro-auto-generated-material)
 - [Grocery store props collection](https://www.unrealengine.com/marketplace/en-US/product/grocery-store-props-collection)
 
