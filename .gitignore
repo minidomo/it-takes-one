@@ -7,6 +7,9 @@
 *.DotSettings.user
 *.blend1
 
+Plugins/amd
+Plugins/nvidia
+
 Content/STF
 Content/StorePropsCollection
 
