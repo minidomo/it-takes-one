@@ -5,15 +5,17 @@
 - [Trailer](https://www.youtube.com/watch?v=35o-ncmbmiU)
 - [Final Report](./Documents/cs354p-final-report.pdf)
 
-# Download
+## Download
 
 - [Windows](https://utexas.box.com/s/y9ggg9u1f6un8sbnz70ivsjr02a0rppm)
 
-# Building
+## Building
 
-Download our [plugins](https://utexas.box.com/s/iwon8l7o1vdmyn2w0rzcv41lg1wy7tfc), and extract them to the `Plugins` directory.
+Add the following assets to the project
+- [Landscape Pro 2.0 Auto-Generated Material](https://www.unrealengine.com/marketplace/en-US/product/landscape-pro-auto-generated-material)
+- [Grocery store props collection](https://www.unrealengine.com/marketplace/en-US/product/grocery-store-props-collection)
 
-# Play Instructions
+## Play Instructions
 
 - Mouse cursor for menu navigation
 - WASD for movement
@@ -23,7 +25,14 @@ Download our [plugins](https://utexas.box.com/s/iwon8l7o1vdmyn2w0rzcv41lg1wy7tfc
 - Hold Space bar in air for glide (Only in Sky Island)
 - Hold Right Click on mouse for jet launch (Only in Sky Island)
 
-# Restart the Game
+## Restart the Game
 
 - Binary: Delete the save files located at `%APPDATA%/../Local/ItTakesOne`
 - Unreal: Delete the save files located in the project directory's `Saved/SaveGame`
+
+## Marketplace assets used
+
+- [LPGenericPropsSet10](https://www.unrealengine.com/marketplace/en-US/product/lpgenericpropsset10)
+- [Quadruped Fantasy Creatures](https://www.unrealengine.com/marketplace/en-US/product/7f7775996f7442b187f6fa510ec9d289)
+- [Ancient Treasures](https://www.unrealengine.com/marketplace/en-US/product/9efde82ef29746fcbb2cb0e45e714f43)
+- [GOOD SKY](https://www.unrealengine.com/marketplace/en-US/product/good-sky)
