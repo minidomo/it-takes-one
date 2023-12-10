@@ -7,6 +7,9 @@
 *.DotSettings.user
 *.blend1
 
+Plugins/amd
+Plugins/nvidia
+
 Content/STF
 Content/StorePropsCollection
 
@@ -37,7 +40,6 @@ Content/StorePropsCollection
 *.la
 *.a
 *.lib
-!Plugins/**/*.lib
 
 # Executables
 *.exe
