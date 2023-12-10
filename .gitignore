@@ -37,6 +37,7 @@ Content/StorePropsCollection
 *.la
 *.a
 *.lib
+!Plugins/**/*.lib
 
 # Executables
 *.exe
