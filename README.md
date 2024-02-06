@@ -4,16 +4,20 @@ A single player third-person puzzle solving game inspired from [It Takes Two](ht
 
 This game was made as a final project by a team of four, including myself, for the course, [CS354P - Game Programming Paradigms](https://www.cs.utexas.edu/users/theshark/courses/cs354p/), at UT Austin. This repository is a slightly modified version of the original private repository on GitLab, so some files may not be included due to GitHub repository size limits. 
 
-For a detailed report on the functionality and controls of the game, you can view the [final report](./Documents/cs354p-final-report.pdf). View the trailer [here](https://www.youtube.com/watch?v=35o-ncmbmiU).
+View the trailer [here](https://www.youtube.com/watch?v=35o-ncmbmiU). To learn how to play, view the [player guide](#player-guide).
 
 ## Releases
 
 | [Windows (x64)](https://github.com/minidomo/it-takes-one/releases/download/2023.1210.0/ItTakesOne-win-x64-2023.1210.0.zip) |
-| -------------------------------------------------------------------------- |
+| -------------------------------------------------------------------------------------------------------------------------- |
+
+## Player guide
+
+Refer to [PLAYER_GUIDE.md](./PLAYER_GUIDE.md).
 
 ## Developing
 
-Built on Unreal Engine 5.2.1.
+Built on Unreal Engine 5.2.1. A [final report](./Documents/cs354p-final-report.pdf) has been written that describes current functionality and controls of the game.
 
 ### Downloading the source code
 
