@@ -4,7 +4,7 @@ A single player third-person puzzle solving game inspired from [It Takes Two](ht
 
 This game was made as a final project by a team of four, including myself, for the course, [CS354P - Game Programming Paradigms](https://www.cs.utexas.edu/users/theshark/courses/cs354p/), at UT Austin. This repository is a slightly modified version of the original private repository on GitLab, so some files may not be included due to GitHub repository size limits. 
 
-View the trailer [here](https://www.youtube.com/watch?v=35o-ncmbmiU). To learn how to play, view the [player guide](#player-guide).
+To learn how to play, view the [player guide](#player-guide).
 
 ## Releases
 
